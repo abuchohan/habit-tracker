@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Platform, View } from 'react-native';
 import { backupSchema, csv, HabitRecord } from '../../shared/domain';
 import { backup, importBackup, savePreferences, useStore, saveRecords } from './store';
-import { Button, Check, Choices, Input, Label, Sheet } from './ui';
+import { Button, Check, Choices, Label, Sheet } from './ui';
 import { download, pickFile } from './platform';
 export function Settings({ onClose, onAccount }: { onClose: () => void; onAccount: () => void }) {
   const store = useStore(), p = store.preferences, [error, setError] = useState(''), [message, setMessage] = useState(''), [busy, setBusy] = useState(false);

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, Text, View, ViewStyle, useColorScheme, useWindowDimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Habit, Entry, addDays, computeHistory, day, entriesFor, entryId, newHabit } from '../shared/domain';
-import { initialize, useStore, saveEntry, saveHabit, saveRecords, reportError, clearError, sync } from './src/store';
+import { initialize, useStore, saveEntry, saveRecords, reportError, clearError, sync } from './src/store';
 import { Button, Choices, Input, Label, Sheet, Theme, dark, light } from './src/ui';
 import { HabitEditor } from './src/HabitEditor';
 import { EntryEditor } from './src/EntryEditor';
@@ -10,6 +10,7 @@ import { HabitDetail, Ring } from './src/HabitDetail';
 import { Settings } from './src/Settings';
 import { Account } from './src/Account';
 import { installOffline, watchConnectivity, resetToken } from './src/platform';
+import { useDateNavigation } from './src/useDateNavigation';
 
 export default function App() {
   const store = useStore(), scheme = useColorScheme(), { width } = useWindowDimensions();
@@ -21,6 +22,8 @@ export default function App() {
   const t = store.preferences.theme === 'dark' || store.preferences.theme === 'black' || store.preferences.theme === 'system' && scheme === 'dark' ? { ...dark, ...(store.preferences.theme === 'black' ? { bg: '#000000', card: '#111111', header: '#111111' } : {}) } : light;
   const today = day(now, store.preferences.dayOffset), mobile = width < 650, cellWidth = mobile ? 44 : 50;
   const count = Math.max(3, Math.min(31, Math.floor((width - (mobile ? 150 : 310)) / cellWidth)));
+  const navigation = useDateNavigation({ offset, cellWidth, reverse: store.preferences.reverse, onOffsetChange: setOffset });
+  const todayStyle: ViewStyle = { backgroundColor: t.accent + '1a', borderLeftWidth: 1, borderRightWidth: 1, borderColor: t.accent + '44' };
   const dates = Array.from({ length: count }, (_, i) => addDays(today, -(offset + i)));
   if (store.preferences.reverse) dates.reverse();
   useEffect(() => {
@@ -67,21 +70,22 @@ export default function App() {
           <View style={{ flex: 1 }} /><Label muted style={{ fontSize: 12 }}>{new Date(addDays(today, -offset) + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', year: 'numeric', timeZone: 'UTC' })}</Label>
         </View>
         {(query || category || archive !== 'active' || type !== 'all' || completion !== 'all') && <View style={{ paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' }}><Label muted style={{ flex: 1, fontSize: 12 }}>{list.length} matching habits{archive === 'archived' ? ' · Archived' : ''}{query ? ` · “${query}”` : ''}{category ? ` · ${category}` : ''}</Label><Button onPress={() => { setQuery(''); setCategory(''); setArchive('active'); setType('all'); setCompletion('all'); }}>Reset</Button></View>}
-        <View style={{ flexDirection: 'row', paddingHorizontal: mobile ? 4 : 12, paddingBottom: 8, borderBottomWidth: 1, borderColor: t.line }}><View style={{ flex: 1, justifyContent: 'center' }}>{reordering && <Label muted style={{ fontSize: 12 }}>Reorder habits</Label>}</View>
-          {dates.map(date => <View key={date} style={{ width: cellWidth, alignItems: 'center' }}><Label muted style={{ fontSize: 10, fontWeight: '600', color: date === today ? t.accent : t.muted }}>{new Date(date + 'T12:00:00Z').toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' }).toUpperCase()}</Label><Label muted style={{ fontSize: 13, color: date === today ? t.accent : t.muted }}>{Number(date.slice(8))}</Label></View>)}</View>
-        <ScrollView contentContainerStyle={{ paddingHorizontal: mobile ? 3 : 10, paddingTop: 3, paddingBottom: 30, gap: 3 }}>
+        <View {...navigation.panHandlers} testID="date-grid" style={[{ flex: 1, minHeight: 0 }, Platform.OS === 'web' && { touchAction: 'pan-y pinch-zoom', userSelect: 'none', cursor: navigation.isDragging ? 'grabbing' : 'grab' } as unknown as ViewStyle]}>
+        <View style={{ flexDirection: 'row', paddingHorizontal: mobile ? 3 : 10, borderBottomWidth: 1, borderColor: t.line }}><View style={{ flex: 1, justifyContent: 'center' }}>{reordering && <Label muted style={{ fontSize: 12 }}>Reorder habits</Label>}</View>
+          {dates.map((date, column) => <View key={column} testID={`date-header-${date}`} accessibilityLabel={date === today ? `${date}, today` : date} style={[{ width: cellWidth, alignItems: 'center', paddingVertical: 6 }, date === today && todayStyle]}><Label muted style={{ fontSize: 10, fontWeight: '600', color: date === today ? t.accent : t.muted }}>{new Date(date + 'T12:00:00Z').toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' }).toUpperCase()}</Label><Label muted style={{ fontSize: 13, color: date === today ? t.accent : t.muted }}>{Number(date.slice(8))}</Label></View>)}</View>
+        <ScrollView testID="habit-list" contentContainerStyle={{ paddingHorizontal: mobile ? 3 : 10, paddingTop: 3, paddingBottom: 30, gap: 3 }}>
           {list.map(h => {
             const history = computed.get(h.id)!, byDate = new Map(history.map(e => [e.date, e]));
             return <View key={h.id} style={{ flexDirection: 'row', minHeight: mobile ? 69 : 74, backgroundColor: t.card, borderBottomWidth: 1, borderColor: t.line, alignItems: 'stretch' }}>
-              <Pressable accessibilityRole="button" accessibilityLabel={`View ${h.name}`} onPress={() => setSelected(h.id)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: mobile ? 8 : 14, paddingLeft: mobile ? 10 : 18, paddingRight: 4 }}>
+              <Pressable accessibilityRole="button" accessibilityLabel={`View ${h.name}`} onPress={() => { if (!navigation.suppressPress()) setSelected(h.id); }} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: mobile ? 8 : 14, paddingLeft: mobile ? 10 : 18, paddingRight: 4 }}>
                 <Ring color={h.color} value={history.at(-1)?.score ?? 0} size={mobile ? 18 : 24} /><View style={{ flex: 1 }}><Text numberOfLines={2} style={{ color: h.color, fontSize: mobile ? 15 : 18 }}>{h.name}</Text>{!mobile && h.archived && <Label muted style={{ fontSize: 11 }}>Archived</Label>}</View>
               </Pressable>
               {reordering && <View style={{ justifyContent: 'center' }}><Pressable accessibilityRole="button" accessibilityLabel={`Move ${h.name} up`} onPress={() => move(h, -1).catch(reportError)} style={{ padding: 5 }}><Label>↑</Label></Pressable><Pressable accessibilityRole="button" accessibilityLabel={`Move ${h.name} down`} onPress={() => move(h, 1).catch(reportError)} style={{ padding: 5 }}><Label>↓</Label></Pressable></View>}
-              {dates.map(date => {
+              {dates.map((date, column) => {
                 const e = byDate.get(date), state = e?.state ?? 'unknown', number = e?.value;
                 const color = state === 'yes' || h.type === 'number' && e?.completed ? h.color : state === 'auto' || state === 'skip' ? t.muted : t.faint;
-                return <Pressable key={date} accessibilityRole="button" accessibilityLabel={`${h.name}, ${date}, ${h.type === 'number' && number !== null && number !== undefined ? `${number} ${h.unit}` : state}`} onPress={() => toggle(h, date)} onLongPress={() => setEntry({ habit: h, date })}
-                  style={({ pressed }) => ({ width: cellWidth, justifyContent: 'center', alignItems: 'center', backgroundColor: pressed ? t.bg : 'transparent' })}>
+                return <Pressable key={column} accessibilityRole="button" accessibilityLabel={`${h.name}, ${date}, ${h.type === 'number' && number !== null && number !== undefined ? `${number} ${h.unit}` : state}`} onPress={() => { if (!navigation.suppressPress()) toggle(h, date); }} onLongPress={() => { if (!navigation.suppressPress()) setEntry({ habit: h, date }); }}
+                  style={({ pressed }) => [{ width: cellWidth, justifyContent: 'center', alignItems: 'center' }, date === today && todayStyle, pressed && !navigation.isDragging && { backgroundColor: t.bg }]}>
                   {h.type === 'number' && state !== 'skip' ? <><Text numberOfLines={1} style={{ color, fontSize: 17, fontWeight: '600' }}>{number === null || number === undefined ? store.preferences.unknown ? '?' : '–' : Number(number.toFixed(3))}</Text><Text numberOfLines={1} style={{ color, fontSize: 10, paddingTop: 2 }}>{h.unit}</Text></> : <Text style={{ color, fontSize: state === 'auto' ? 19 : 25, fontWeight: '700' }}>{state === 'yes' ? '✓' : state === 'auto' ? '✓' : state === 'skip' ? '–' : state === 'unknown' && store.preferences.unknown ? '?' : '×'}</Text>}
                   {!!e?.notes && <View style={{ position: 'absolute', bottom: 8, width: 3, height: 3, borderRadius: 2, backgroundColor: t.muted }} />}
                 </Pressable>;
@@ -91,6 +95,7 @@ export default function App() {
           {!list.length && <View style={{ alignItems: 'center', padding: 40, paddingTop: 70, gap: 12 }}><Label style={{ fontSize: 21 }}>{habits.length ? 'No matching habits' : 'Build a habit, one day at a time.'}</Label><Label muted style={{ textAlign: 'center' }}>{habits.length ? 'Try changing the filters.' : 'Add your first habit to start tracking. No account needed.'}</Label>
             {!habits.length && <Button primary onPress={() => setEditor({ habit: newHabit(), isNew: true })}>Add your first habit</Button>}</View>}
         </ScrollView>
+        </View>
       </>}
     <Pressable accessibilityRole="button" accessibilityLabel="Account and sync status" onPress={() => setAccount(true)} style={{ paddingVertical: 8, paddingHorizontal: 18, backgroundColor: t.card, borderTopWidth: 1, borderColor: t.line, flexDirection: 'row', justifyContent: 'space-between' }}>
       <Label muted style={{ fontSize: 11 }}>{store.account ? store.syncStatus : 'Local only · saved on this device'}</Label><Label muted style={{ fontSize: 11 }}>{store.account ? 'Account' : 'Connect sync'}</Label>

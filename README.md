@@ -53,6 +53,8 @@ Railway references: [config as code](https://docs.railway.com/config-as-code/ref
 
 The service worker caches only app assets. API and authentication responses are excluded. After a successful first visit, the built app can reopen offline. Development mode does not install a service worker.
 
+Today is highlighted through the date header and habit entries. Swipe horizontally over the date grid on a phone, or click and drag it with a mouse, to browse past dates. Habit names stay in place and vertical list scrolling works normally. Date order follows the Reverse date order setting; the Today button returns to the current day.
+
 ## Data and sync
 
 - Web data is saved in IndexedDB; native builds use AsyncStorage.

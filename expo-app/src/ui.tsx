@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, TextInput, TextInputProps, View } from 'react-native';
 export const light = { bg: '#eeeeee', card: '#ffffff', text: '#303030', muted: '#767676', line: '#dddddd', header: '#424242', accent: '#1976d2', faint: '#d4d4d4' };
 export const dark = { bg: '#151515', card: '#252525', text: '#eeeeee', muted: '#aaaaaa', line: '#3c3c3c', header: '#303030', accent: '#70b4ff', faint: '#555555' };
 export const Theme = createContext(light);

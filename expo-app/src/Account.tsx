@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
 import { Button, Check, Choices, Input, Label, Sheet } from './ui';
 import { connect, disconnect, sync, useStore } from './store';
 import { api } from './api';
