@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: habits
+      POSTGRES_PASSWORD: habits
+      POSTGRES_DB: habits
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - habits-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U habits -d habits"]
+      interval: 5s
+      retries: 10
+volumes:
+  habits-postgres:
