@@ -52,7 +52,8 @@ app.use('/api', (req, res, next) => {
   }
   next();
 });
-app.use("/api/auth", authLimiter);
+// Session checks and habit sync must not consume the credential-attempt budget.
+app.use(["/api/auth/login", "/api/auth/register", "/api/auth/reset-password"], authLimiter);
 app.use("/api", router);
 app.use('/api/sync', syncRouter);
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

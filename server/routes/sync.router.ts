@@ -3,12 +3,17 @@ import { z } from 'zod';
 import { recordSchema, savedPreferencesSchema } from '../../shared/domain';
 import { verifySession } from '../middleware/verifySession.middleware';
 import prisma from '../prisma/client';
+import { refreshSession } from '../services/session';
 export const syncRouter = Router();
 syncRouter.use(verifySession);
 syncRouter.post('/', async (req, res) => {
-  const parsed = z.object({ records: z.array(recordSchema).max(500), preferences: savedPreferencesSchema.optional() }).safeParse(req.body);
+  const parsed = z.object({ accountId: z.string().optional(), records: z.array(recordSchema).max(500), preferences: savedPreferencesSchema.optional() }).safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid habit data' });
   const userId = req.user!.id;
+  // Check before writing: a different browser tab may have changed the session cookie.
+  if (parsed.data.accountId !== undefined && parsed.data.accountId !== userId) {
+    return res.status(401).json({ error: 'Sign in again to sync this account.' });
+  }
   try {
     const writes = parsed.data.records.map(record => prisma.$executeRaw`
       INSERT INTO habit_records ("userId", "recordId", version, data)
@@ -28,6 +33,7 @@ syncRouter.post('/', async (req, res) => {
     await prisma.$transaction(writes);
     const rows = await prisma.habitRecord.findMany({ where: { userId }, select: { data: true } });
     const saved = await prisma.userPreferences.findUnique({ where: { userId } });
+    await refreshSession(req, res);
     res.json({ records: rows.map(row => row.data), preferences: saved ? { version: saved.version, values: saved.data } : null });
   } catch (err) {
     console.error('Sync failed', err instanceof Error ? err.message : 'Unknown error');

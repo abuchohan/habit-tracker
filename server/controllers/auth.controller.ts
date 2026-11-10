@@ -1,13 +1,12 @@
 // Based on Spring Board's Prisma sessions and httpOnly cookie authentication.
-import { CookieOptions, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import prisma from '../prisma/client';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { z } from 'zod';
 import { sendPasswordResetEmail } from '../services/email';
+import { sessionCookie as cookie, sessionExpiry as expiry, refreshSession } from '../services/session';
 const credentials = z.object({ email: z.string().trim().email().max(254).transform(v => v.toLowerCase()), password: z.string().min(8).max(72) });
-const cookie: CookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/' };
-const expiry = () => new Date(Date.now() + 30 * 86400000);
 export async function register(req: Request, res: Response) {
   const result = credentials.safeParse(req.body);
   if (!result.success) return res.status(400).json({ error: 'Enter a valid email and a password of 8–72 characters.' });
@@ -41,9 +40,7 @@ export async function logout(req: Request, res: Response) {
 }
 export async function me(req: Request, res: Response) {
   try {
-    const expiresAt = expiry();
-    await prisma.session.update({ where: { id: req.session!.id }, data: { expiresAt } });
-    res.cookie('session_id', req.session!.id, { ...cookie, expires: expiresAt });
+    await refreshSession(req, res);
     res.json({ user: { id: req.user!.id, email: req.user!.email } });
   } catch { res.status(500).json({ error: 'Unable to refresh session.' }); }
 }

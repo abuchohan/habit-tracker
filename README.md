@@ -94,7 +94,8 @@ Today is highlighted through the date header and habit entries. Swipe horizontal
 
 - Web data is saved in IndexedDB; native builds use AsyncStorage.
 - Guest data and each account's local data use separate storage keys. Connecting an account offers an explicit option to copy guest habits into the account.
-- Changes are saved locally before sync. Online/focus events and a 30-second retry interval retry synchronization while the app is open.
+- Changes are saved locally immediately, then batched into a sync after 2 seconds without edits (at most 10 seconds during continuous editing). Only records and settings changed since the last successful sync are uploaded, in batches of up to 500 records. Online/focus events and a 30-second interval check for changes from other devices while the app is open.
+- Sync validates the account and refreshes the session in the same request. Session checks and sync do not consume the login/register/password-reset rate limit. Failed syncs back off, respect `Retry-After` on a 429 response, and keep changes saved locally until they can be uploaded. Expired sessions wait for sign-in instead of repeatedly retrying.
 - Each habit and each daily entry has its own version. The newest edit wins for the same record; different dates merge independently. Deletions retain tombstones to prevent old offline copies from restoring deleted habits.
 - Signing out returns to separate guest data. Account data remains cached on that device; this is intended for personal devices.
 - Settings (including reverse date order, theme, and week start) are saved locally and sync with a connected account. The newest settings edit wins if devices change settings offline. Guest and account settings are kept separately; signing out restores the guest settings. Existing device settings are kept on upgrade and seed accounts that have no synced settings yet.

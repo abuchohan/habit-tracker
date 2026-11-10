@@ -23,7 +23,10 @@ test('session accounts isolate sync data, retain newest edits and reject expired
     assert.equal((await request('/sync', { records: [] })).status, 401);
     assert.equal((await request('/sync', { records: [] }, first, 'https://untrusted.example')).status, 403);
     const h = { ...newHabit(), name: 'Private habit' };
+    assert.equal((await request('/sync', { accountId: 'another-account', records: [h] }, first)).status, 401);
+    assert.deepEqual((await (await request('/sync', { records: [] }, first)).json()).records, []);
     const firstSync = await request('/sync', { records: [h] }, first); assert.equal(firstSync.status, 200);
+    assert.ok(firstSync.headers.get('set-cookie')?.includes('HttpOnly'));
     assert.equal((await firstSync.json()).records.length, 1);
     assert.equal((await (await request('/sync', { records: [] }, second)).json()).records.length, 0);
     const newer = { ...h, name: 'New name', version: version(h.version) };
@@ -60,5 +63,30 @@ test('session accounts isolate sync data, retain newest edits and reject expired
     assert.equal((await request('/auth/me', undefined, second)).status, 401);
   } finally {
     await prisma.user.deleteMany({ where: { email: { in: accounts } } }); await prisma.$disconnect(); await new Promise<void>((resolve,reject) => listener.close(err => err ? reject(err) : resolve()));
+  }
+});
+
+test('session checks and sync do not consume or share the credential rate limit', async () => {
+  const { app } = await import('../server/app');
+  const listener = app.listen(0, '127.0.0.1');
+  await new Promise<void>(resolve => listener.once('listening', resolve));
+  const address = listener.address();
+  if (!address || typeof address === 'string') throw new Error('No test server');
+  const base = `http://127.0.0.1:${address.port}/api`;
+  try {
+    for (let i = 0; i < 25; i++) assert.equal((await fetch(base + '/auth/me')).status, 401);
+    const login = () => fetch(base + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    assert.equal((await login()).status, 400);
+    for (let i = 0; i < 20; i++) await login();
+    const limited = await login();
+    assert.equal(limited.status, 429);
+    assert.ok(Number(limited.headers.get('Retry-After')) > 0);
+    assert.equal((await fetch(base + '/auth/me')).status, 401);
+    assert.equal((await fetch(base + '/auth/logout', { method: 'POST' })).status, 401);
+    assert.equal((await fetch(base + '/sync', { method: 'POST' })).status, 401);
+    assert.equal((await fetch(base + '/auth/register', { method: 'POST' })).status, 429);
+    assert.equal((await fetch(base + '/auth/reset-password', { method: 'POST' })).status, 429);
+  } finally {
+    await new Promise<void>((resolve, reject) => listener.close(err => err ? reject(err) : resolve()));
   }
 });

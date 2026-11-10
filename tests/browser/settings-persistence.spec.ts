@@ -77,7 +77,7 @@ test('account settings follow devices, survive offline edits and stay separate f
       if (path.endsWith('/sync')) {
         const incoming: SavedPreferences = route.request().postDataJSON().preferences;
         const saved = remote.get(email);
-        if (!saved || incoming.version > saved.version) remote.set(email, incoming);
+        if (incoming && (!saved || incoming.version > saved.version)) remote.set(email, incoming);
         return route.fulfill({ json: { records: [], preferences: remote.get(email) } });
       }
       return route.fulfill({ json: { user: { id: email, email } } });
