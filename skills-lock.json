@@ -25,6 +25,12 @@
       "skillPath": ".claude/skills/design-system/SKILL.md",
       "computedHash": "407141febc8fae02d061c909843d4082693174829240e44e620e3add26a9a735"
     },
+    "design-taste-frontend": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill/SKILL.md",
+      "computedHash": "acda6bf83f200405aa200eb245448fdc11cfce43d97bc2d9b8bf13a27f362d95"
+    },
     "slides": {
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
       "sourceType": "github",

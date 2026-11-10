@@ -1,0 +1,13 @@
+{
+  "palettes": [
+    "white-mint-tiles"
+  ],
+  "types": [
+    "host"
+  ],
+  "dealt": [
+    "host",
+    "gabarito",
+    "instrument"
+  ]
+}

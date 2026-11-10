@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Check, Choices, Input, Label, Sheet } from './ui';
+import { Button, Check, Choices, Input, Label, Sheet, useTheme } from './ui';
 import { connect, disconnect, sync, useStore } from './store';
 import { api } from './api';
 import { clearResetToken } from './platform';
 export function Account({ onClose, token }: { onClose: () => void; token?: string | null }) {
+  const t = useTheme();
   const store = useStore(), [mode, setMode] = useState(token ? 'reset' : 'login'), [email, setEmail] = useState(store.account?.email ?? ''), [password, setPassword] = useState('');
   const [includeLocal, setIncludeLocal] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(''), [message, setMessage] = useState('');
   async function run(fn: () => Promise<void>) { setBusy(true); setError(''); setMessage(''); try { await fn(); } catch (e) { setError(e instanceof Error ? e.message : 'Unable to connect.'); } finally { setBusy(false); } }
@@ -27,6 +28,6 @@ export function Account({ onClose, token }: { onClose: () => void; token?: strin
         else { await connect(email, password, mode === 'register', includeLocal); onClose(); }
       })}>{busy ? 'Please wait…' : token ? 'Change password' : mode === 'forgot' ? 'Send reset email' : mode === 'register' ? 'Create account & connect' : 'Connect account'}</Button>
     </>}
-    {!!error && <Label style={{ color: '#d32f2f' }}>{error}</Label>}{!!message && <Label>{message}</Label>}
+    {!!error && <Label accessibilityRole="alert" style={{ color: t.danger }}>{error}</Label>}{!!message && <Label accessibilityLiveRegion="polite">{message}</Label>}
   </Sheet>;
 }

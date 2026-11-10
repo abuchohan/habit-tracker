@@ -1,5 +1,22 @@
 export function installOffline() {
+  // Expo's dev shell does not run prepare-web.cjs; use the same local assets there.
+  for (const href of ['/appearance.css', '/assets/motion/motion.css']) {
+    if (!document.querySelector(`link[href="${href}"]`)) {
+      const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = href; document.head.appendChild(link);
+    }
+  }
+  if (!document.querySelector('script[src="/assets/motion/motion.js"]')) {
+    const script = document.createElement('script'); script.type = 'module'; script.src = '/assets/motion/motion.js'; document.head.appendChild(script);
+  }
   if ('serviceWorker' in navigator && !__DEV__) navigator.serviceWorker.register('/sw.js').catch(console.warn);
+}
+export function applyAppearance(theme: { bg: string; text: string; accent: string }, reduced: boolean, ready: boolean) {
+  document.documentElement.style.setProperty('--bg', theme.bg);
+  document.documentElement.style.setProperty('--ink', theme.text);
+  document.documentElement.style.setProperty('--action', theme.accent);
+  document.documentElement.dataset.motion = reduced ? 'off' : '';
+  document.documentElement.dataset.ready = ready ? '1' : '';
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.bg);
 }
 export function watchConnectivity(fn: () => void) {
   window.addEventListener('online', fn); window.addEventListener('focus', fn);

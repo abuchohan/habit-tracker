@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Entry, Habit, day, entryId, dateSchema } from '../../shared/domain';
 import { useStore, saveEntry } from './store';
-import { Button, Choices, Input, Label, Sheet } from './ui';
+import { Button, Choices, Input, Label, Sheet, useTheme } from './ui';
 export function EntryEditor({ habit, date: initialDate, onClose }: { habit: Habit; date: string; onClose: () => void }) {
+  const t = useTheme();
   const store = useStore(), existing = store.records.find((r): r is Entry => r.kind === 'entry' && r.id === entryId(habit.id, initialDate) && !r.deleted);
   const [date, setDate] = useState(initialDate), [status, setStatus] = useState<Entry['state']>(existing?.state ?? 'unknown');
   const [value, setValue] = useState(existing?.value?.toString() ?? ''), [notes, setNotes] = useState(existing?.notes ?? ''), [error, setError] = useState(''), [busy, setBusy] = useState(false);
@@ -23,7 +24,7 @@ export function EntryEditor({ habit, date: initialDate, onClose }: { habit: Habi
       <Choices value={status === 'skip' ? 'skip' : 'value'} options={[["value", 'Record value'], ['skip', 'Skip']]} onChange={v => setStatus(v === 'skip' ? 'skip' : 'yes')} />
     </>}
     <Input label="Notes (optional)" multiline value={notes} onChangeText={setNotes} maxLength={4000} />
-    {!!error && <Label style={{ color: '#d32f2f' }}>{error}</Label>}
+    {!!error && <Label accessibilityRole="alert" style={{ color: t.danger }}>{error}</Label>}
     <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}><Button onPress={onClose}>Cancel</Button><Button primary disabled={busy} onPress={save}>{busy ? 'Saving…' : 'Save entry'}</Button></View>
   </Sheet>;
 }

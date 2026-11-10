@@ -16,6 +16,7 @@ test('create habits, persist entries offline, edit notes, inspect statistics, an
   await context.setOffline(true); await page.reload();
   await expect(page.getByRole('button', { name: 'View Read books', exact: true })).toBeVisible();
   await page.getByRole('button', { name: /^Read books, .*yes$/ }).first().click();
+  await expect(page.getByRole('button', { name: /^Read books, .*no$/ }).first()).toBeVisible();
   await page.reload(); await expect(page.getByRole('button', { name: /^Read books, .*no$/ }).first()).toBeVisible();
   await context.setOffline(false);
   await page.getByRole('button', { name: 'View Read books', exact: true }).click();

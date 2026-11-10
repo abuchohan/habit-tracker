@@ -1,0 +1,22 @@
+@font-face { font-family: 'Host Grotesk'; font-style: normal; font-weight: 400 500; font-display: swap; src: url('/fonts/host-grotesk-latin.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400 500; font-display: swap; src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2'); }
+/* The dealt :root block is kept verbatim. The app maps these roles in design.ts. */
+:root {
+  --p-bg: #ffffff; --p-surface: #f3f3f3; --p-ink: #232323; --p-muted: #686868;
+  --p-accent: #a1ffcb; --p-accent-ink: #232323; --p-action: #232323; --p-action-ink: #ffffff;
+  --p-inv-bg: #232323; --p-inv-surface: #303030; --p-inv-ink: #ffffff; --p-inv-muted: #a4a4a4;
+  --p-inv-accent: #a1ffcb; --p-inv-accent-ink: #232323; --p-inv-action: #a1ffcb; --p-inv-action-ink: #232323;
+  --font-display: "Host Grotesk", system-ui, sans-serif;
+  --font-text: "Host Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --display-weight: 500;
+  --display-tracking: -0.035em;
+  --display-tracking-xl: -0.04em;
+}
+:root { --bg: var(--p-bg); --ink: var(--p-ink); --action: var(--p-action); }
+html, body { background: var(--bg); color: var(--ink); }
+*, *::before, *::after { box-sizing: border-box; }
+input, textarea, button { font-family: var(--font-text); }
+[role='button']:focus-visible, [role='radio']:focus-visible, [role='checkbox']:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--action) !important; outline-offset: 3px; }
+.skip-link { position: fixed; top: 12px; left: 16px; z-index: 10000; padding: 12px 20px; background: var(--bg); color: var(--ink); border: 1px solid var(--ink); border-radius: 10px; font: 500 16px var(--font-text); transform: translateY(-160%); }
+.skip-link:focus { transform: none; }

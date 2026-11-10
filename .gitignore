@@ -11,3 +11,8 @@ test-results/
 *.tsbuildinfo
 .playwright/
 artifacts/
+.taste-skill/chrome*/
+.taste-skill/gate/
+.taste-skill/shots/
+.taste-skill/check/
+.taste-skill/layout/

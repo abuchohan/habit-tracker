@@ -1,0 +1,11 @@
+{
+ "page": "expo-app/dist/index.html",
+ "url": null,
+ "root": "expo-app/dist",
+ "kind": "software",
+ "category": "personal habit tracking",
+ "primary": "Add habit",
+ "rounds": 3,
+ "start": "2026-11-10T15:09:47.955Z",
+ "by": "gate.mjs --start"
+}

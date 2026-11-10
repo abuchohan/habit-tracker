@@ -1,0 +1,893 @@
+{
+ "start": "2026-11-10T15:09:47.955Z",
+ "round": 3,
+ "idle": 0,
+ "errors": 0,
+ "status": "open",
+ "history": [
+  {
+   "at": "2026-11-10T15:33:11.524Z",
+   "mode": "manual",
+   "status": "fail",
+   "fails": 23,
+   "round": 1,
+   "reused": false,
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-10T15:35:28.710Z",
+   "mode": "manual",
+   "status": "fail",
+   "fails": 22,
+   "round": 2,
+   "reused": false,
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-10T15:38:28.662Z",
+   "mode": "manual",
+   "status": "open",
+   "fails": 22,
+   "round": 3,
+   "reused": false,
+   "stopHookActive": false
+  }
+ ],
+ "max": 3,
+ "marker": {
+  "page": "expo-app/dist/index.html",
+  "url": null,
+  "root": "expo-app/dist",
+  "kind": "software",
+  "category": "personal habit tracking",
+  "primary": "Add habit",
+  "rounds": 3,
+  "start": "2026-11-10T15:09:47.955Z",
+  "by": "gate.mjs --start"
+ },
+ "manual": true,
+ "roundKey": "3700d95131cb8e89:da39a3ee",
+ "roundFree": false,
+ "idleFree": false,
+ "blockKey": null,
+ "fp": "3700d95131cb8e89",
+ "page": "expo-app/dist/index.html",
+ "found": {
+  "fails": [
+   {
+    "check": "hero-fill",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your log Search habits Filte\"",
+    "msg": "the next section shows on the first screen: it starts at 231px on a 900px screen (the hero ends at 228px)",
+    "fix": "let the hero fill the first screen alone (min-height: 100svh, less above it): nothing of the next section on load",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "hero-fill"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your log Search habits Filte\""
+    ]
+   },
+   {
+    "check": "nav",
+    "where": "(the first screen)",
+    "msg": "no nav bar across the top of the first screen (a header with the brand, the section links and the main action)",
+    "fix": "make the nav one bar from the content's left edge to its right edge, with every link and action inside it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "nav"
+    ],
+    "wheres": [
+     "(the first screen)"
+    ]
+   },
+   {
+    "check": "section-gaps",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(3) / main#habit-content > div.css-g5y9jx:nth-of-type(4)",
+    "msg": "53px between these sections, +77% against the median 30px",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-gaps"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(3) / main#habit-content > div.css-g5y9jx:nth-of-type(4)"
+    ]
+   },
+   {
+    "check": "empty-area",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet. Track a yes/no habit or a\"",
+    "msg": "89% of the section is empty: 240px under its last (button.css-g5y9jx.r-1loqt21), 44% beside content that covers under half the container, in its 516px of rows (WARN over 35%, FAIL over 50%)",
+    "fix": "fill the section: a picture or a second column beside the words, or more of its own content; the section stays one or two screens tall (T-height)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "empty-area"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet. Track a yes/no habit or a\""
+    ]
+   },
+   {
+    "check": "moment-none",
+    "where": "(the page)",
+    "msg": "a software page (--type) deals no moment: every kind carries one, two on a long page (moments.md)",
+    "fix": "deal one (moments.mjs pick --page software) and mount it in its own section",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "moment-none"
+    ],
+    "wheres": [
+     "(the page)"
+    ]
+   },
+   {
+    "check": "hero-screen",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+    "msg": "the hero ends at 228px on a 900px screen, 672px above the fold: it ends at the fold, 1px either way (SR-1)",
+    "fix": "make the hero exactly one screen (height: 100svh, its content fitted inside), never taller or shorter",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "hero-screen"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\""
+    ]
+   },
+   {
+    "check": "hero-screen",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \"",
+    "msg": "672px of the next section shows on the first screen (from 228px on a 900px screen): nothing below the hero shows at load (SR-1)",
+    "fix": "end the hero at the fold so nothing of the next section shows at load (hero height: 100svh)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "hero-screen"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \""
+    ]
+   },
+   {
+    "check": "section-height",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(3) \"November 2026Today\"",
+    "msg": "the section is 60px tall (0.1 screens), 840px short of one screen (900px): every section after the hero is one screen or two, 2px either way (SR-2)",
+    "fix": "set the section to one screen or two (height: calc(var(--h,1) * 100vh), --h 1 or 2) and cut or split its content to fit",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-height"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(3) \"November 2026Today\"",
+     "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \"",
+     "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet.Track a yes/no habit or a \""
+    ]
+   },
+   {
+    "check": "section-air",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) / main#habit-content > div.css-g5y9jx:nth-of-type(3)",
+    "msg": "16px of air between the content of these two sections: 128-480px (64-600px WARN) (every gap out of the band at 1440px, top to bottom: 16px after \"0 habits in your log\", 116px after \"November 2026Today\") (SR-3)",
+    "fix": "keep 128-480px of air between the content of neighbouring sections (112-420px on a phone): the sections' padding (--padt, --padb)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-air"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(2) / main#habit-content > div.css-g5y9jx:nth-of-type(3)"
+    ]
+   },
+   {
+    "check": "section-air",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet.Track a yes/no habit or a \"",
+    "msg": "the content fills 30.4% of the section's height (157 of 516px): 55% or more (40% WARN) (SR-3)",
+    "fix": "fill the section to 55%: more content, a picture or a background layer, or merge it into the section above as its last block",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-air"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet.Track a yes/no habit or a \""
+    ]
+   },
+   {
+    "check": "one-section",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) > div.css-g5y9jx > h1.css-146c3p1 \"Habit log\"",
+    "msg": "the screen at scroll 0px (stride 0) shows 156px of section 1 and the heading of section 1 whole and the content of 4 sections, over 24px each beside section 4: a screen shows one section (another may peek 8px, 24px WARN) (SR-4)",
+    "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "one-section"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(1) > div.css-g5y9jx > h1.css-146c3p1 \"Habit log\"",
+     "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+     "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \"",
+     "main#habit-content > div.css-g5y9jx:nth-of-type(3) \"November 2026Today\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "div#root > div.css-g5y9jx > div.css-g5y9jx > header.css-g5y9jx \"Personal workspace/Habit logSaved on thi\"",
+    "msg": "the nav's content runs 264px from the left and 48px from the right (read from its outermost blocks: no .wrap): 264 and 48px are not one margin; the margin is 64-120px at 1440px (one container, equal margins, 2px either way) (SR-6)",
+    "fix": "use one container on every section and the nav (.wrap): one margin left and right, 64-120px on a desktop, 16-24px on a phone",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "div#root > div.css-g5y9jx > div.css-g5y9jx > header.css-g5y9jx \"Personal workspace/Habit logSaved on thi\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+    "msg": "the content of section 1 runs 264px from the left and 48px from the right (read from its outermost blocks: no .wrap): 264 and 48px are not one margin; the margin is 64-120px at 1440px (one container, equal margins, 2px either way) (SR-6)",
+    "fix": "use one container on every section and the nav (.wrap): one margin left and right, 64-120px on a desktop, 16-24px on a phone",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \"",
+    "msg": "the content of section 2 runs 264px from the left and 48px from the right (read from its outermost blocks: no .wrap): 264 and 48px are not one margin; the margin is 64-120px at 1440px (one container, equal margins, 2px either way) (and 2 more like it: \"November 2026Today\", \"No habits yet.Track a ye\") (SR-6)",
+    "fix": "use one container on every section and the nav (.wrap): one margin left and right, 64-120px on a desktop, 16-24px on a phone",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "a.skip-link \"Skip to habit log\"",
+    "msg": "a <a> at the top of the page, outside header.nav, main, footer.closing and nav.actionbar (SR-6)",
+    "fix": "build the page as header.nav, a main of sections (each one in-flow .wrap plus background layers) and footer.closing",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "a.skip-link \"Skip to habit log\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "div#root \"HabitsHabit log0Archived habits0Settings\"",
+    "msg": "a <div> at the top of the page, outside header.nav, main, footer.closing and nav.actionbar (SR-6)",
+    "fix": "build the page as header.nav, a main of sections (each one in-flow .wrap plus background layers) and footer.closing",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "div#root \"HabitsHabit log0Archived habits0Settings\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx > div.css-146c3p1 \"Search habits\"",
+    "msg": "1 text block starts on a left line at x 1027, 763px from the container's left: text starts on the container's left, or on one split line (x 744, 840, 936) (SR-6)",
+    "fix": "start the text on the container's left, or on the one split line every split shares",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx > div.css-146c3p1 \"Search habits\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "div.css-g5y9jx.r-150rngu > div.css-g5y9jx > div.css-g5y9jx > div.css-146c3p1:nth-of-type(2) \"No habits yet.\"",
+    "msg": "1 text block starts on a left line at x 731, 467px from the container's left: text starts on the container's left, or on one split line (x 744, 840, 936) (and 1 more like it: x 677) (SR-6)",
+    "fix": "start the text on the container's left, or on the one split line every split shares",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "div.css-g5y9jx.r-150rngu > div.css-g5y9jx > div.css-g5y9jx > div.css-146c3p1:nth-of-type(2) \"No habits yet.\""
+    ]
+   },
+   {
+    "check": "hero-fill",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"Active Archived\"",
+    "msg": "the next section shows on the first screen: it starts at 188px on a 844px screen (the hero ends at 188px)",
+    "fix": "let the hero fill the first screen alone (min-height: 100svh, less above it): nothing of the next section on load",
+    "widths": [
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "hero-fill"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"Active Archived\""
+    ]
+   },
+   {
+    "check": "button-styles",
+    "where": "(one screen)",
+    "msg": "3 button styles on one screen: soft, fill #a1ffcb, outline #a1ffcb (\"Add habit\"); soft, fill #232323, outline #3c3c3c (\"Active\"); soft, outline #3c3c3c (\"Today\"); the odd one out: \"Today\"",
+    "fix": "one primary and one secondary button: one shape, one height per size, one label size",
+    "widths": [
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "button-styles"
+    ],
+    "wheres": [
+     "(one screen)"
+    ]
+   },
+   {
+    "check": "button-styles",
+    "where": "(the page)",
+    "msg": "3 button styles on the page: soft, fill #a1ffcb, outline #a1ffcb x2 (\"Add habit\"); soft, fill #232323, outline #3c3c3c x1 (\"Active\"); soft, outline #3c3c3c x1 (\"Today\")",
+    "fix": "one primary and one secondary button: one shape, one height per size, one label size",
+    "widths": [
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "button-styles"
+    ],
+    "wheres": [
+     "(the page)"
+    ]
+   },
+   {
+    "check": "container",
+    "where": "page",
+    "msg": "no .wrap",
+    "fix": "put the content in one .wrap",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "layout",
+    "ids": [
+     "container"
+    ],
+    "wheres": [
+     "page"
+    ]
+   }
+  ],
+  "warns": [
+   {
+    "check": "flush",
+    "where": "div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx > input.css-11aywtz.r-6taxm2",
+    "msg": "div.css-g5y9jx:nth-of-type(2) and div.css-g5y9jx:nth-of-type(3) run together: 16px between their content, on one ground",
+    "fix": "give the section its padding at the edge where the ground changes (the closing call keeps a clear gap above the footer)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "flush",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(3) > button.css-g5y9jx.r-1loqt21",
+    "msg": "its button sits 16px above the rule on top of div.css-g5y9jx:nth-of-type(4)",
+    "fix": "give the section its padding at the edge where the ground changes (the closing call keeps a clear gap above the footer)",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-buttons",
+    "where": "div#root > div.css-g5y9jx > nav.css-g5y9jx > button.css-g5y9jx.r-1loqt21:nth-of-type(2) \"Local workspace Connect sync\"",
+    "msg": "\"Local workspace Connect sync\" does not start with a verb (book, buy, try, start, get, see...) (and 2 more like it: \"Filter & sort\", \"Today\")",
+    "fix": "label buttons with a verb and what the visitor gets (\"Book a room\", \"Start free trial\")",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-actions",
+    "where": "(the page)",
+    "msg": "the main action \"Add habit\" does not read word for word the same in the closing section",
+    "fix": "few actions, one wording: at most 2 in the hero, the main action word for word in nav, hero and close",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) / main#habit-content > div.css-g5y9jx:nth-of-type(3)",
+    "msg": "16px between these sections, -47% against the median 30px",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "stranded-action",
+    "where": "div.css-g5y9jx.r-150rngu > div.css-g5y9jx > div.css-g5y9jx > button.css-g5y9jx.r-1loqt21 \"Add your first habit\"",
+    "msg": "stands 289px down from the nearest text of its block (\"\")",
+    "fix": "put the button under or beside the text it belongs to",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "share-meta",
+    "where": "head",
+    "msg": "the head lacks og:image, twitter:card: a shared link shows no picture or title of its own",
+    "fix": "copy the head block of starter.html: og tags, twitter:card, the icon and theme-color (references/system.md, Head)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-air",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(3) / main#habit-content > div.css-g5y9jx:nth-of-type(4)",
+    "msg": "116px of air between the content of these two sections: 128-480px (64-600px WARN) (SR-3)",
+    "fix": "keep 128-480px of air between the content of neighbouring sections (112-420px on a phone): the sections' padding (--padt, --padb)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "flush",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx > button.css-g5y9jx.r-1loqt21:nth-of-type(1) \"Active\"",
+    "msg": "div.css-g5y9jx:nth-of-type(2) and div.css-g5y9jx:nth-of-type(3) run together: 16px between their content, on one ground",
+    "fix": "give the section its padding at the edge where the ground changes (the closing call keeps a clear gap above the footer)",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "empty-area",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet. Track a yes/no habit or a\"",
+    "msg": "43% of the section is empty: 208px under its last (button.css-g5y9jx.r-1loqt21), in its 467px of rows (WARN over 35%, FAIL over 50%)",
+    "fix": "fill the section: a picture or a second column beside the words, or more of its own content; the section stays one or two screens tall (T-height)",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   }
+  ],
+  "crashed": [],
+  "seconds": {
+   "consistency": 58,
+   "layout": 3
+  }
+ },
+ "open": [
+  {
+   "check": "hero-fill",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your log Search habits Filte\"",
+   "msg": "the next section shows on the first screen: it starts at 231px on a 900px screen (the hero ends at 228px)",
+   "fix": "let the hero fill the first screen alone (min-height: 100svh, less above it): nothing of the next section on load",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "hero-fill"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your log Search habits Filte\""
+   ]
+  },
+  {
+   "check": "nav",
+   "where": "(the first screen)",
+   "msg": "no nav bar across the top of the first screen (a header with the brand, the section links and the main action)",
+   "fix": "make the nav one bar from the content's left edge to its right edge, with every link and action inside it",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "nav"
+   ],
+   "wheres": [
+    "(the first screen)"
+   ]
+  },
+  {
+   "check": "section-gaps",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(3) / main#habit-content > div.css-g5y9jx:nth-of-type(4)",
+   "msg": "53px between these sections, +77% against the median 30px",
+   "fix": "use one gap between sections (all within 25% of each other)",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-gaps"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(3) / main#habit-content > div.css-g5y9jx:nth-of-type(4)"
+   ]
+  },
+  {
+   "check": "empty-area",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet. Track a yes/no habit or a\"",
+   "msg": "89% of the section is empty: 240px under its last (button.css-g5y9jx.r-1loqt21), 44% beside content that covers under half the container, in its 516px of rows (WARN over 35%, FAIL over 50%)",
+   "fix": "fill the section: a picture or a second column beside the words, or more of its own content; the section stays one or two screens tall (T-height)",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "empty-area"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet. Track a yes/no habit or a\""
+   ]
+  },
+  {
+   "check": "moment-none",
+   "where": "(the page)",
+   "msg": "a software page (--type) deals no moment: every kind carries one, two on a long page (moments.md)",
+   "fix": "deal one (moments.mjs pick --page software) and mount it in its own section",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "moment-none"
+   ],
+   "wheres": [
+    "(the page)"
+   ]
+  },
+  {
+   "check": "hero-screen",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+   "msg": "the hero ends at 228px on a 900px screen, 672px above the fold: it ends at the fold, 1px either way (SR-1)",
+   "fix": "make the hero exactly one screen (height: 100svh, its content fitted inside), never taller or shorter",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "hero-screen"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\""
+   ]
+  },
+  {
+   "check": "hero-screen",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \"",
+   "msg": "672px of the next section shows on the first screen (from 228px on a 900px screen): nothing below the hero shows at load (SR-1)",
+   "fix": "end the hero at the fold so nothing of the next section shows at load (hero height: 100svh)",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "hero-screen"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \""
+   ]
+  },
+  {
+   "check": "section-height",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(3) \"November 2026Today\"",
+   "msg": "the section is 60px tall (0.1 screens), 840px short of one screen (900px): every section after the hero is one screen or two, 2px either way (SR-2)",
+   "fix": "set the section to one screen or two (height: calc(var(--h,1) * 100vh), --h 1 or 2) and cut or split its content to fit",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-height"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(3) \"November 2026Today\"",
+    "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \"",
+    "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet.Track a yes/no habit or a \""
+   ]
+  },
+  {
+   "check": "section-air",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) / main#habit-content > div.css-g5y9jx:nth-of-type(3)",
+   "msg": "16px of air between the content of these two sections: 128-480px (64-600px WARN) (every gap out of the band at 1440px, top to bottom: 16px after \"0 habits in your log\", 116px after \"November 2026Today\") (SR-3)",
+   "fix": "keep 128-480px of air between the content of neighbouring sections (112-420px on a phone): the sections' padding (--padt, --padb)",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-air"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(2) / main#habit-content > div.css-g5y9jx:nth-of-type(3)"
+   ]
+  },
+  {
+   "check": "section-air",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet.Track a yes/no habit or a \"",
+   "msg": "the content fills 30.4% of the section's height (157 of 516px): 55% or more (40% WARN) (SR-3)",
+   "fix": "fill the section to 55%: more content, a picture or a background layer, or merge it into the section above as its last block",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-air"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(4) \"No habits yet.Track a yes/no habit or a \""
+   ]
+  },
+  {
+   "check": "one-section",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) > div.css-g5y9jx > h1.css-146c3p1 \"Habit log\"",
+   "msg": "the screen at scroll 0px (stride 0) shows 156px of section 1 and the heading of section 1 whole and the content of 4 sections, over 24px each beside section 4: a screen shows one section (another may peek 8px, 24px WARN) (SR-4)",
+   "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "one-section"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(1) > div.css-g5y9jx > h1.css-146c3p1 \"Habit log\"",
+    "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+    "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \"",
+    "main#habit-content > div.css-g5y9jx:nth-of-type(3) \"November 2026Today\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "div#root > div.css-g5y9jx > div.css-g5y9jx > header.css-g5y9jx \"Personal workspace/Habit logSaved on thi\"",
+   "msg": "the nav's content runs 264px from the left and 48px from the right (read from its outermost blocks: no .wrap): 264 and 48px are not one margin; the margin is 64-120px at 1440px (one container, equal margins, 2px either way) (SR-6)",
+   "fix": "use one container on every section and the nav (.wrap): one margin left and right, 64-120px on a desktop, 16-24px on a phone",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "div#root > div.css-g5y9jx > div.css-g5y9jx > header.css-g5y9jx \"Personal workspace/Habit logSaved on thi\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+   "msg": "the content of section 1 runs 264px from the left and 48px from the right (read from its outermost blocks: no .wrap): 264 and 48px are not one margin; the margin is 64-120px at 1440px (one container, equal margins, 2px either way) (SR-6)",
+   "fix": "use one container on every section and the nav (.wrap): one margin left and right, 64-120px on a desktop, 16-24px on a phone",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \"",
+   "msg": "the content of section 2 runs 264px from the left and 48px from the right (read from its outermost blocks: no .wrap): 264 and 48px are not one margin; the margin is 64-120px at 1440px (one container, equal margins, 2px either way) (and 2 more like it: \"November 2026Today\", \"No habits yet.Track a ye\") (SR-6)",
+   "fix": "use one container on every section and the nav (.wrap): one margin left and right, 64-120px on a desktop, 16-24px on a phone",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "a.skip-link \"Skip to habit log\"",
+   "msg": "a <a> at the top of the page, outside header.nav, main, footer.closing and nav.actionbar (SR-6)",
+   "fix": "build the page as header.nav, a main of sections (each one in-flow .wrap plus background layers) and footer.closing",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "a.skip-link \"Skip to habit log\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "div#root \"HabitsHabit log0Archived habits0Settings\"",
+   "msg": "a <div> at the top of the page, outside header.nav, main, footer.closing and nav.actionbar (SR-6)",
+   "fix": "build the page as header.nav, a main of sections (each one in-flow .wrap plus background layers) and footer.closing",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "div#root \"HabitsHabit log0Archived habits0Settings\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx > div.css-146c3p1 \"Search habits\"",
+   "msg": "1 text block starts on a left line at x 1027, 763px from the container's left: text starts on the container's left, or on one split line (x 744, 840, 936) (SR-6)",
+   "fix": "start the text on the container's left, or on the one split line every split shares",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx:nth-of-type(2) > div.css-g5y9jx > div.css-146c3p1 \"Search habits\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "div.css-g5y9jx.r-150rngu > div.css-g5y9jx > div.css-g5y9jx > div.css-146c3p1:nth-of-type(2) \"No habits yet.\"",
+   "msg": "1 text block starts on a left line at x 731, 467px from the container's left: text starts on the container's left, or on one split line (x 744, 840, 936) (and 1 more like it: x 677) (SR-6)",
+   "fix": "start the text on the container's left, or on the one split line every split shares",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "div.css-g5y9jx.r-150rngu > div.css-g5y9jx > div.css-g5y9jx > div.css-146c3p1:nth-of-type(2) \"No habits yet.\""
+   ]
+  },
+  {
+   "check": "hero-fill",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"Active Archived\"",
+   "msg": "the next section shows on the first screen: it starts at 188px on a 844px screen (the hero ends at 188px)",
+   "fix": "let the hero fill the first screen alone (min-height: 100svh, less above it): nothing of the next section on load",
+   "widths": [
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "hero-fill"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"Active Archived\""
+   ]
+  },
+  {
+   "check": "button-styles",
+   "where": "(one screen)",
+   "msg": "3 button styles on one screen: soft, fill #a1ffcb, outline #a1ffcb (\"Add habit\"); soft, fill #232323, outline #3c3c3c (\"Active\"); soft, outline #3c3c3c (\"Today\"); the odd one out: \"Today\"",
+   "fix": "one primary and one secondary button: one shape, one height per size, one label size",
+   "widths": [
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "button-styles"
+   ],
+   "wheres": [
+    "(one screen)"
+   ]
+  },
+  {
+   "check": "button-styles",
+   "where": "(the page)",
+   "msg": "3 button styles on the page: soft, fill #a1ffcb, outline #a1ffcb x2 (\"Add habit\"); soft, fill #232323, outline #3c3c3c x1 (\"Active\"); soft, outline #3c3c3c x1 (\"Today\")",
+   "fix": "one primary and one secondary button: one shape, one height per size, one label size",
+   "widths": [
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "button-styles"
+   ],
+   "wheres": [
+    "(the page)"
+   ]
+  },
+  {
+   "check": "container",
+   "where": "page",
+   "msg": "no .wrap",
+   "fix": "put the content in one .wrap",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "layout",
+   "ids": [
+    "container"
+   ],
+   "wheres": [
+    "page"
+   ]
+  }
+ ],
+ "waived": [],
+ "warnCount": 10,
+ "at": "2026-11-10T15:38:28.663Z",
+ "openTold": true
+}
