@@ -35,6 +35,19 @@ export const preferencesSchema = z.object({
   dayOffset: z.number().int().min(0).max(6).default(0), tapToToggle: z.boolean().default(true),
   reducedMotion: z.boolean().default(false),
 });
+export const savedPreferencesSchema = z.object({
+  version: base.version,
+  values: preferencesSchema,
+});
+export type SavedPreferences = z.infer<typeof savedPreferencesSchema>;
+// Existing device preferences seed an account without overriding settings already synced elsewhere.
+export function seedPreferences(values: Preferences): SavedPreferences {
+  return { version: '0000000000000:legacy', values };
+}
+export function mergePreferences(local: SavedPreferences, remote: SavedPreferences | null) {
+  // Equal seed versions use the server's canonical copy on a device's first sync.
+  return remote && remote.version >= local.version ? remote : local;
+}
 export const backupSchema = z.object({
   format: z.literal('loop-web'), version: z.literal(1),
   records: z.array(recordSchema).max(200000), preferences: preferencesSchema.optional(),

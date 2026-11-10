@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { newHabit, version, HabitRecord, Entry, entryId, mergeRecords, computeHistory, addDays, streaks, csv, dateSchema, recordSchema, day } from '../shared/domain';
+import { newHabit, version, HabitRecord, Entry, entryId, mergeRecords, computeHistory, addDays, streaks, csv, dateSchema, recordSchema, day, defaultPreferences, seedPreferences, mergePreferences } from '../shared/domain';
 function habit(fields = {}) { return { ...newHabit(), id: 'habit-1', name: 'Read', created: '2026-01-01', ...fields }; }
 function entry(date: string, state: Entry['state'] = 'yes', value: number | null = null): Entry {
   return { id: entryId('habit-1', date), kind: 'entry', habitId: 'habit-1', date, state, value, notes: '', version: version(), deleted: false };
@@ -39,6 +39,16 @@ test('record merge converges, preserves disjoint edits and retains deletion tomb
   assert.deepEqual(merged, mergeRecords(right, left)); assert.equal(merged.length, 3);
   assert.equal(merged.find(r => r.id === a.id)?.version, newer.version); assert.equal(merged.find(r => r.id === removed.id)?.deleted, true);
   assert.deepEqual(mergeRecords(merged, merged), merged);
+});
+
+test('settings accept the account seed, keep newer offline edits and accept newer remote edits', () => {
+  const local = seedPreferences(defaultPreferences);
+  const remote = seedPreferences({ ...defaultPreferences, reverse: true });
+  assert.deepEqual(mergePreferences(local, remote).values, remote.values);
+  const edited = { version: version(remote.version), values: { ...remote.values, theme: 'dark' as const } };
+  assert.deepEqual(mergePreferences(edited, remote), edited);
+  assert.deepEqual(mergePreferences(remote, edited), edited);
+  assert.deepEqual(mergePreferences(edited, null), edited);
 });
 test('versions are monotonic and dates remain valid over daylight saving and leap boundaries', () => {
   assert.ok(version() < version()); assert.equal(addDays('2026-03-28', 2), '2026-03-30'); assert.equal(addDays('2024-02-28', 1), '2024-02-29');

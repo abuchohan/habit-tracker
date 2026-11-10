@@ -17,6 +17,7 @@ model User {
   Session       Session[]
   PasswordReset PasswordReset[]
   records       HabitRecord[]
+  preferences   UserPreferences?
 
   @@map("users")
 }
@@ -49,4 +50,13 @@ model HabitRecord {
   user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@id([userId, recordId])
   @@map("habit_records")
+}
+
+model UserPreferences {
+  userId  String @id
+  version String
+  data    Json
+  user    User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
 }

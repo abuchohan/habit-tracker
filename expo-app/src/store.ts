@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { z } from 'zod';
-import { HabitRecord, Habit, Entry, Preferences, backupSchema, preferencesSchema, defaultPreferences, mergeRecords, entryId, version, recordSchema } from '../../shared/domain';
+import { HabitRecord, Habit, Entry, Preferences, backupSchema, preferencesSchema, savedPreferencesSchema, defaultPreferences, seedPreferences, mergePreferences, mergeRecords, entryId, version, recordSchema } from '../../shared/domain';
 import { getItem, setItem, requestPersistence } from './storage';
 import { api, ApiError } from './api';
 
@@ -17,6 +17,12 @@ function serial<T>(fn: () => Promise<T>): Promise<T> {
   const result = operations.then(fn); operations = result.catch(() => {}); return result;
 }
 const key = (account: Account | null) => `records:${account?.id ?? 'guest'}`;
+const preferencesKey = (account: Account | null) => `preferences:${account?.id ?? 'guest'}`;
+let savedPreferences = seedPreferences(defaultPreferences);
+async function readPreferences(account: Account | null, fallback = defaultPreferences) {
+  const raw = await getItem(preferencesKey(account));
+  return raw ? savedPreferencesSchema.parse(JSON.parse(raw)) : seedPreferences(fallback);
+}
 async function readRecords(account: Account | null) {
   const raw = await getItem(key(account));
   return raw ? z.array(recordSchema).parse(JSON.parse(raw)) : [];
@@ -28,9 +34,15 @@ export function initialize() {
       const rawAccount = await getItem('account');
       const account = rawAccount ? z.object({ id: z.string(), email: z.string().email() }).nullable().parse(JSON.parse(rawAccount)) : null;
       const rawPreferences = await getItem('preferences');
-      const preferences = rawPreferences ? preferencesSchema.parse(JSON.parse(rawPreferences)) : defaultPreferences;
+      const legacy = rawPreferences ? preferencesSchema.parse(JSON.parse(rawPreferences)) : defaultPreferences;
+      // Keep the old device-wide settings when upgrading to separate guest/account caches.
+      savedPreferences = await readPreferences(account, legacy);
+      if (account && !await getItem(preferencesKey(null))) {
+        await setItem(preferencesKey(null), JSON.stringify(seedPreferences(legacy)));
+      }
+      await setItem(preferencesKey(account), JSON.stringify(savedPreferences));
       const records = await readRecords(account);
-      emit({ ready: true, account, records, preferences, syncStatus: account ? 'Waiting to sync' : 'Local only' });
+      emit({ ready: true, account, records, preferences: savedPreferences.values, syncStatus: account ? 'Waiting to sync' : 'Local only' });
       requestPersistence();
       if (account) void sync();
     } catch (error) { emit({ error: `Could not open saved data: ${error instanceof Error ? error.message : 'Storage unavailable'}` }); }
@@ -52,7 +64,13 @@ export function saveEntry(habitId: string, date: string, fields: Pick<Entry, 'st
   return saveRecords([{ id, kind: 'entry', habitId, date, deleted: false, version: version(prev?.version), ...fields }]);
 }
 export function savePreferences(preferences: Preferences) {
-  return serial(async () => { const parsed = preferencesSchema.parse(preferences); await setItem('preferences', JSON.stringify(parsed)); emit({ preferences: parsed }); });
+  return serial(async () => {
+    const parsed = preferencesSchema.parse(preferences);
+    const next = { version: version(savedPreferences.version), values: parsed };
+    await setItem(preferencesKey(state.account), JSON.stringify(next));
+    savedPreferences = next;
+    emit({ preferences: parsed });
+  }).then(() => { if (state.account) void sync(); });
 }
 let syncing: Promise<void> | null = null;
 let syncAgain = false;
@@ -67,14 +85,19 @@ export function sync(): Promise<void> {
       if (result.user.id !== account.id) throw new Error('Sign in again to sync this account.');
       await operations;
       const outgoing = [...state.records];
+      const outgoingPreferences = savedPreferences;
       for (let i = 0; i < Math.max(outgoing.length, 1); i += 500) {
-        const response = await api<{ records: unknown[] }>('/sync', { records: outgoing.slice(i, i + 500) });
+        const response = await api<{ records: unknown[]; preferences?: unknown }>('/sync', { records: outgoing.slice(i, i + 500), preferences: outgoingPreferences });
         const remote = z.array(recordSchema).parse(response.records);
+        const remotePreferences = savedPreferencesSchema.nullish().parse(response.preferences) ?? null;
         await serial(async () => {
           if (state.account?.id !== account.id) return;
           const records = mergeRecords(state.records, remote);
+          const preferences = mergePreferences(savedPreferences, remotePreferences);
           await setItem(key(account), JSON.stringify(records));
-          emit({ records });
+          await setItem(preferencesKey(account), JSON.stringify(preferences));
+          savedPreferences = preferences;
+          emit({ records, preferences: preferences.values });
         });
       }
       emit({ lastSync: new Date().toISOString(), syncStatus: 'Synced' });
@@ -94,9 +117,12 @@ export async function connect(email: string, password: string, register: boolean
     const local = await readRecords(user);
     const guest = includeLocal && !state.account ? state.records : [];
     const records = mergeRecords(local, guest);
+    const preferences = await readPreferences(user, state.preferences);
     await setItem(key(user), JSON.stringify(records));
     await setItem('account', JSON.stringify(user));
-    emit({ account: user, records, syncStatus: 'Waiting to sync', lastSync: null });
+    await setItem(preferencesKey(user), JSON.stringify(preferences));
+    savedPreferences = preferences;
+    emit({ account: user, records, preferences: preferences.values, syncStatus: 'Waiting to sync', lastSync: null });
   });
   await sync();
 }
@@ -105,8 +131,10 @@ export async function disconnect() {
   await api('/auth/logout', {});
   await serial(async () => {
     const records = await readRecords(null);
+    const preferences = await readPreferences(null);
     await setItem('account', 'null');
-    emit({ account: null, records, lastSync: null, syncStatus: 'Local only' });
+    savedPreferences = preferences;
+    emit({ account: null, records, preferences: preferences.values, lastSync: null, syncStatus: 'Local only' });
   });
 }
 export function backup() { return JSON.stringify({ format: 'loop-web', version: 1, records: state.records, preferences: state.preferences }, null, 2); }

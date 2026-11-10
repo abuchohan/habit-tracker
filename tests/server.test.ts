@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import dotenv from 'dotenv';
-import { newHabit, entryId, version } from '../shared/domain';
+import { newHabit, entryId, version, defaultPreferences, seedPreferences } from '../shared/domain';
 dotenv.config({ path: 'server/.env', quiet: true });
 test('session accounts isolate sync data, retain newest edits and reject expired sessions', { skip: !process.env.DATABASE_URL }, async () => {
   const { app } = await import('../server/app'); const { default: prisma } = await import('../server/prisma/client');
@@ -32,6 +32,19 @@ test('session accounts isolate sync data, retain newest edits and reject expired
     const deleted = { ...newer, deleted: true, version: version(newer.version) }; await request('/sync', { records: [deleted] }, first);
     const retry = await (await request('/sync', { records: [newer] }, first)).json(); assert.equal(retry.records[0].deleted, true);
     assert.equal((await request('/sync', { records: [{ ...h, denominator: 0 }] }, first)).status, 400);
+    const preferences = { version: version(), values: { ...defaultPreferences, reverse: true, theme: 'dark' } };
+    const settingsSync = await request('/sync', { records: [], preferences }, first);
+    assert.equal(settingsSync.status, 200);
+    assert.deepEqual((await settingsSync.json()).preferences, preferences);
+    // A fresh device's defaults and older clients must not reset account settings.
+    const freshDevice = await (await request('/sync', { records: [], preferences: seedPreferences(defaultPreferences) }, first)).json();
+    assert.deepEqual(freshDevice.preferences, preferences);
+    assert.deepEqual((await (await request('/sync', { records: [] }, first)).json()).preferences, preferences);
+    assert.equal((await (await request('/sync', { records: [] }, second)).json()).preferences, null);
+    const changed = { version: version(preferences.version), values: { ...preferences.values, reverse: false } };
+    await request('/sync', { records: [], preferences: changed }, first);
+    assert.deepEqual((await (await request('/sync', { records: [], preferences }, first)).json()).preferences, changed);
+    assert.equal((await request('/sync', { records: [], preferences: { ...changed, values: { reverse: 'yes' } } }, first)).status, 400);
     const me = await request('/auth/me', undefined, first); assert.equal(me.status, 200); assert.ok(me.headers.get('set-cookie')?.includes('HttpOnly'));
     assert.equal('password' in (await me.json()).user, false);
     await prisma.session.update({ where: { id: first.split('=')[1] }, data: { expiresAt: new Date(0) } });

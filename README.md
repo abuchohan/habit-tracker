@@ -62,7 +62,8 @@ Today is highlighted through the date header and habit entries. Swipe horizontal
 - Changes are saved locally before sync. Online/focus events and a 30-second retry interval retry synchronization while the app is open.
 - Each habit and each daily entry has its own version. The newest edit wins for the same record; different dates merge independently. Deletions retain tombstones to prevent old offline copies from restoring deleted habits.
 - Signing out returns to separate guest data. Account data remains cached on that device; this is intended for personal devices.
-- Preferences are device-local. Local data belongs to the browser and website origin. Backups provide an independent copy; Safari and Brave have separate storage even on the same phone.
+- Settings (including reverse date order, theme, and week start) are saved locally and sync with a connected account. The newest settings edit wins if devices change settings offline. Guest and account settings are kept separately; signing out restores the guest settings. Existing device settings are kept on upgrade and seed accounts that have no synced settings yet.
+- Local data belongs to the browser and website origin. Backups provide an independent copy; Safari and Brave have separate storage even on the same phone.
 
 ## Implemented
 
