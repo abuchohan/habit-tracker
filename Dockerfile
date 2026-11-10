@@ -6,6 +6,7 @@ COPY expo-app/package.json expo-app/package.json
 COPY server/package.json server/package.json
 RUN npm ci && mkdir -p /app/server/node_modules
 COPY shared shared
+COPY scripts scripts
 COPY expo-app expo-app
 COPY server server
 RUN npm run build:web && npm run build --workspace server
