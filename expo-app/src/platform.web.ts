@@ -1,3 +1,15 @@
+import { useSyncExternalStore } from 'react';
+
+const touchQuery = '(any-pointer: coarse), (hover: none)';
+function subscribeTouchDevice(onChange: () => void) {
+  const media = window.matchMedia(touchQuery);
+  media.addEventListener('change', onChange);
+  return () => media.removeEventListener('change', onChange);
+}
+export function useTouchDevice() {
+  return useSyncExternalStore(subscribeTouchDevice, () => window.matchMedia(touchQuery).matches, () => false);
+}
+
 export function installOffline() {
   // Expo's dev shell does not run prepare-web.cjs; use the same local assets there.
   for (const href of ['/appearance.css', '/assets/motion/motion.css']) {

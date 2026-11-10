@@ -8,7 +8,7 @@ test('create habits, persist entries offline, edit notes, inspect statistics, an
   await page.getByRole('textbox', { name: 'Question (optional)', exact: true }).fill('Did you read today?');
   await page.getByRole('button', { name: 'Save habit', exact: true }).click();
   await expect(page.getByRole('button', { name: 'View Read books', exact: true })).toBeVisible();
-  const todayCell = page.getByRole('button', { name: /^Read books, .*unknown$/ }).first();
+  const todayCell = page.getByRole('button', { name: /^Read books, .*unknown$/ }).last();
   await todayCell.click(); await expect(page.getByRole('button', { name: /^Read books, .*yes$/ }).first()).toBeVisible();
   await page.reload(); await expect(page.getByRole('button', { name: /^Read books, .*yes$/ }).first()).toBeVisible();
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
@@ -56,7 +56,8 @@ test('numerical tracking, themes, full backup export, and empty-account form', a
   const file = await download; expect(file.suggestedFilename()).toBe('habits-backup.json');
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
   await page.screenshot({ path: `artifacts/${testInfo.project.name}-dark.png`, fullPage: true });
-  await page.getByRole('button', { name: 'Account and sync status', exact: true }).click();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('button', { name: 'Connect a sync account', exact: true }).click();
   await expect(page.getByText('An account is optional.', { exact: false })).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'Include my local habits in this account', exact: true })).not.toBeChecked();
 });

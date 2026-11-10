@@ -9,7 +9,8 @@
     "start": "node dist/server/index.js",
     "check-types": "tsc --noEmit",
     "db:migrate": "prisma migrate deploy",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "db:seed": "prisma db seed"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

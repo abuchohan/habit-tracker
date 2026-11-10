@@ -30,7 +30,8 @@ export function HabitEditor({ habit, isNew, onClose }: { habit: Habit; isNew: bo
       <Pressable key={color} accessibilityRole="radio" accessibilityLabel={`Colour ${color}`} accessibilityState={{ checked: draft.color === color }} aria-checked={draft.color === color} onPress={() => field('color', color)}
         style={({ pressed }) => ({ width: 44, height: 44, backgroundColor: color, borderRadius: 14, borderWidth: 2, borderColor: draft.color === color ? t.text : 'transparent', alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.65 : 1 })}>
         {draft.color === color && <Icon name="check" color={foregroundOn(color)} />}</Pressable>)}</View></View>
-    <View style={{ gap: 8 }}><Label style={{ fontSize: 14, fontWeight: '500' }}>Tracking type</Label><Choices value={draft.type} options={[["boolean", 'Yes or no'], ['number', 'Measurable']]} onChange={v => field('type', v)} /></View>
+    <View style={{ gap: 8 }}><Label style={{ fontSize: 14, fontWeight: '500' }}>Tracking type</Label><Choices value={draft.type} options={[["boolean", 'Yes or no'], ['number', 'Measurable'], ['time', 'Time of day']]} onChange={v => field('type', v)} /></View>
+    {draft.type === 'time' && <View style={{ gap: 8 }}><Label style={{ fontSize: 14, fontWeight: '500' }}>Time format</Label><Choices value={draft.timeFormat} options={[["24h", '24-hour'], ['12h', '12-hour (AM/PM)']]} onChange={v => field('timeFormat', v)} /></View>}
     {draft.type === 'number' && <>
       <Choices value={draft.targetType} options={[["atLeast", 'At least'], ['atMost', 'At most']]} onChange={v => field('targetType', v)} />
       <Input label="Target" inputRef={targetRef} error={fieldErrors.target} keyboardType="decimal-pad" value={target} onChangeText={setTarget} />
@@ -40,7 +41,7 @@ export function HabitEditor({ habit, isNew, onClose }: { habit: Habit; isNew: bo
       <Choices value={den === '1' ? 'daily' : den === '7' ? 'weekly' : den === '30' ? 'monthly' : 'custom'} options={[["daily", 'Daily'], ['weekly', 'Weekly'], ['monthly', 'Monthly'], ['custom', 'Custom']]}
         onChange={v => { setDen(v === 'daily' ? '1' : v === 'weekly' ? '7' : v === 'monthly' ? '30' : '2'); setNum('1'); }} />
       <View style={{ flexDirection: 'row', gap: 12 }}>
-        {draft.type === 'boolean' && <View style={{ flex: 1 }}><Input label="Repetitions" inputRef={numeratorRef} error={fieldErrors.numerator} keyboardType="number-pad" value={num} onChangeText={setNum} /></View>}
+        {draft.type !== 'number' && <View style={{ flex: 1 }}><Input label="Repetitions" inputRef={numeratorRef} error={fieldErrors.numerator} keyboardType="number-pad" value={num} onChangeText={setNum} /></View>}
         <View style={{ flex: 1 }}><Input label={draft.type === 'number' ? 'Target per this many days' : 'In this many days'} inputRef={denominatorRef} error={fieldErrors.denominator} keyboardType="number-pad" value={den} onChangeText={setDen} /></View>
       </View>
     </View>

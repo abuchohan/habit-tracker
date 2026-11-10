@@ -43,7 +43,7 @@ test('record merge converges, preserves disjoint edits and retains deletion tomb
 
 test('settings accept the account seed, keep newer offline edits and accept newer remote edits', () => {
   const local = seedPreferences(defaultPreferences);
-  const remote = seedPreferences({ ...defaultPreferences, reverse: true });
+  const remote = seedPreferences({ ...defaultPreferences, reverse: false });
   assert.deepEqual(mergePreferences(local, remote).values, remote.values);
   const edited = { version: version(remote.version), values: { ...remote.values, theme: 'dark' as const } };
   assert.deepEqual(mergePreferences(edited, remote), edited);

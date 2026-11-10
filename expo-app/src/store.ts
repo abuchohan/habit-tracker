@@ -58,7 +58,7 @@ export function saveRecords(incoming: HabitRecord[]) {
 export async function saveHabit(habit: Habit) {
   await saveRecords([{ ...habit, version: version(state.records.find(r => r.id === habit.id)?.version) }]);
 }
-export function saveEntry(habitId: string, date: string, fields: Pick<Entry, 'state' | 'value' | 'notes'>) {
+export function saveEntry(habitId: string, date: string, fields: Pick<Entry, 'state' | 'value' | 'notes' | 'time'>) {
   const id = entryId(habitId, date);
   const prev = state.records.find(r => r.id === id);
   return saveRecords([{ id, kind: 'entry', habitId, date, deleted: false, version: version(prev?.version), ...fields }]);

@@ -2,6 +2,23 @@
 // Copyright (C) 2016-2025 Alinson Santos Xavier. GPL-3.0-or-later.
 import { z } from 'zod';
 
+export const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use a valid time (HH:mm).');
+export type TimeFormat = '24h' | '12h';
+export function formatTime(time: string, format: TimeFormat = '24h') {
+  if (format === '24h') return time;
+  const hour = Number(time.slice(0, 2));
+  return `${hour % 12 || 12}:${time.slice(3)} ${hour < 12 ? 'AM' : 'PM'}`;
+}
+export function parseTime(input: string, format: TimeFormat = '24h', period: 'AM' | 'PM' = 'AM'): string | null {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(input.trim());
+  if (!match) return null;
+  let hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (minute > 59 || (format === '24h' ? hour > 23 : hour < 1 || hour > 12)) return null;
+  if (format === '12h') hour = hour % 12 + (period === 'PM' ? 12 : 0);
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
 export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value => {
   const d = new Date(value + 'T12:00:00Z');
   return !Number.isNaN(+d) && d.toISOString().slice(0, 10) === value && value >= '1900-01-01' && value <= '2200-12-31';
@@ -14,7 +31,8 @@ const base = {
 export const habitSchema = z.object({
   ...base, kind: z.literal('habit'), name: z.string().trim().min(1).max(120),
   question: z.string().max(500), description: z.string().max(4000), category: z.string().max(100).default(''),
-  color: z.string().regex(/^#[a-fA-F0-9]{6}$/), type: z.enum(['boolean', 'number']),
+  color: z.string().regex(/^#[a-fA-F0-9]{6}$/), type: z.enum(['boolean', 'number', 'time']),
+  timeFormat: z.enum(['24h', '12h']).default('24h'),
   numerator: z.number().int().min(1).max(365), denominator: z.number().int().min(1).max(365),
   target: z.number().finite().min(0).max(1e9), targetType: z.enum(['atLeast', 'atMost']),
   unit: z.string().max(40), created: dateSchema, archived: z.boolean(), order: z.number().finite(),
@@ -26,12 +44,13 @@ export const entrySchema = z.object({
   ...base, kind: z.literal('entry'), habitId: z.string().min(1).max(160), date: dateSchema,
   value: z.number().finite().min(0).max(1e9).nullable(), state: z.enum(['yes', 'no', 'skip', 'unknown']),
   notes: z.string().max(4000),
+  time: timeSchema.nullable().optional(),
 }).refine(e => e.id === `entry:${e.habitId}:${e.date}`, 'Invalid entry identifier');
 export const recordSchema = z.union([habitSchema, entrySchema]);
 export const preferencesSchema = z.object({
   theme: z.enum(['system', 'light', 'dark', 'black']).default('system'),
   skip: z.boolean().default(false), unknown: z.boolean().default(false),
-  reverse: z.boolean().default(false), firstWeekday: z.number().int().min(0).max(6).default(1),
+  reverse: z.boolean().default(true), firstWeekday: z.number().int().min(0).max(6).default(1),
   dayOffset: z.number().int().min(0).max(6).default(0), tapToToggle: z.boolean().default(true),
   reducedMotion: z.boolean().default(false),
 });
@@ -78,7 +97,7 @@ export function monthLength(date: string) { const d = new Date(date + 'T12:00:00
 export function entryId(habitId: string, date: string) { return `entry:${habitId}:${date}`; }
 export function newHabit(order = 0): Habit {
   return { id: uid(), kind: 'habit', version: version(), deleted: false, name: '', question: '', description: '', category: '',
-    color: palette[0], type: 'boolean', numerator: 1, denominator: 1, target: 1, targetType: 'atLeast', unit: '',
+    color: palette[0], type: 'boolean', timeFormat: '24h', numerator: 1, denominator: 1, target: 1, targetType: 'atLeast', unit: '',
     created: day(), archived: false, order, reminder: null, reminderDays: [0, 1, 2, 3, 4, 5, 6],
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
 }
@@ -92,14 +111,14 @@ export function entriesFor(records: HabitRecord[], habitId: string) {
   return records.filter((r): r is Entry => r.kind === 'entry' && r.habitId === habitId && !r.deleted);
 }
 export function schedule(h: Habit) { return h.denominator === 1 ? 'Every day' : h.numerator === 1 ? `Every ${h.denominator} days` : `${h.numerator} times in ${h.denominator} days`; }
-export type ComputedDay = { date: string; state: Entry['state'] | 'auto'; value: number | null; notes: string; completed: boolean; score: number };
+export type ComputedDay = { date: string; state: Entry['state'] | 'auto'; value: number | null; time: string | null; notes: string; completed: boolean; score: number };
 export function computeHistory(h: Habit, entries: Entry[], today = day(), firstWeekday = 1): ComputedDay[] {
   const known = entries.filter(e => !e.deleted && e.date <= today).sort((a, b) => b.date.localeCompare(a.date));
   if (!known.length) return [];
   const byDate = new Map(known.map(e => [e.date, e]));
   let from = known[known.length - 1].date;
   const auto = new Set<string>();
-  if (h.type === 'boolean') {
+  if (h.type !== 'number') {
     const yes = known.filter(e => e.state === 'yes');
     const intervals: { begin: string; center: string; end: string }[] = [];
     for (let i = h.numerator - 1; i < yes.length; i++) {
@@ -120,8 +139,8 @@ export function computeHistory(h: Habit, entries: Entry[], today = day(), firstW
   }
   const history: ComputedDay[] = [];
   const frequency = h.numerator / h.denominator, multiplier = Math.pow(0.5, Math.sqrt(frequency) / 13);
-  const denominator = h.type === 'boolean' && frequency < 1 ? h.denominator * 2 : h.denominator;
-  const numerator = h.type === 'boolean' && frequency < 1 ? h.numerator * 2 : h.numerator;
+  const denominator = h.type !== 'number' && frequency < 1 ? h.denominator * 2 : h.denominator;
+  const numerator = h.type !== 'number' && frequency < 1 ? h.numerator * 2 : h.numerator;
   let score = h.type === 'number' && h.targetType === 'atMost' ? 1 : 0;
   let sum = 0;
   const window: number[] = [];
@@ -132,12 +151,12 @@ export function computeHistory(h: Habit, entries: Entry[], today = day(), firstW
     if (state !== 'skip') {
       const v = h.type === 'number' ? value ?? 0 : state === 'yes' ? 1 : 0;
       window.push(v); sum += v; if (window.length > denominator) sum -= window.shift()!;
-      const completion = h.type === 'boolean' ? Math.min(1, sum / numerator)
+      const completion = h.type !== 'number' ? Math.min(1, sum / numerator)
         : h.targetType === 'atLeast' ? h.target > 0 ? Math.min(1, sum / h.target) : 1
         : h.target > 0 ? Math.max(0, Math.min(1, 2 - sum / h.target)) : sum > 0 ? 0 : 1;
       score = score * multiplier + completion * (1 - multiplier);
     }
-    history.push({ date: d, state, value, notes: e?.notes ?? '', completed: ['yes', 'auto', 'skip'].includes(state), score });
+    history.push({ date: d, state, value, time: state === 'yes' ? e?.time ?? null : null, notes: e?.notes ?? '', completed: ['yes', 'auto', 'skip'].includes(state), score });
   }
   if (h.type === 'number') {
     const periods = new Map<string, ComputedDay[]>();
@@ -168,5 +187,5 @@ export function streaks(history: ComputedDay[]) {
 export function csv(records: HabitRecord[]) {
   const escape = (s: unknown) => `"${String(s ?? '').replace(/"/g, '""')}"`;
   const habits = new Map(records.filter((r): r is Habit => r.kind === 'habit' && !r.deleted).map(h => [h.id, h]));
-  return [['Habit', 'Date', 'State', 'Value', 'Unit', 'Notes'].map(escape).join(','), ...records.filter((r): r is Entry => r.kind === 'entry' && !r.deleted && habits.has(r.habitId)).sort((a,b) => a.date.localeCompare(b.date)).map(e => [habits.get(e.habitId)!.name, e.date, e.state, e.value, habits.get(e.habitId)!.unit, e.notes].map(escape).join(','))].join('\r\n');
+  return [['Habit', 'Date', 'State', 'Value', 'Unit', 'Time (24h)', 'Notes'].map(escape).join(','), ...records.filter((r): r is Entry => r.kind === 'entry' && !r.deleted && habits.has(r.habitId)).sort((a,b) => a.date.localeCompare(b.date)).map(e => [habits.get(e.habitId)!.name, e.date, e.state, e.value, habits.get(e.habitId)!.unit, e.state === 'yes' ? e.time : '', e.notes].map(escape).join(','))].join('\r\n');
 }

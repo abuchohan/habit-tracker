@@ -21,6 +21,41 @@ Open http://localhost:5000. The PostgreSQL container uses port **54329** on loca
 
 The production web export uses `/api` on the website's own origin. This keeps session cookies first-party for Safari and Brave. Set `EXPO_PUBLIC_API_URL` in the build environment only if a different API URL is needed. For phone access to an Expo development server, use the computer's LAN address in the frontend environment and add the frontend origin to `ALLOWED_ORIGINS`.
 
+## Local demo data
+
+Generate a realistic sample user with **28 habits** (24 active and 4 archived) across health, fitness, mindfulness, learning, work, home, money and relationships. History spans up to seven months, with newer habits, daily and weekly schedules, numerical targets, limits, notes, misses, skips, a holiday and an unfinished today.
+
+### Try it without an account
+
+```powershell
+npm.cmd run seed:local
+```
+
+Open the app without signing in, go to **Settings > Import backup / Loop database**, and select **`.local/demo-habits.json`** in this repository. Review the counts and select **Import**. The habits are saved in this browser and work offline; no account or database is needed. You can also run the frontend alone with `npm.cmd run web` and open http://localhost:8081.
+
+Imports merge with existing guest data. Use a separate browser profile for a clean demo, or export your current backup first. Reimporting uses the same identifiers, so habits are updated rather than duplicated.
+
+### Try the same data with a local account
+
+With the local PostgreSQL container running and migrations applied:
+
+```powershell
+npm.cmd run db:seed
+```
+
+Sign in at http://localhost:5000 with **`demo@habits.local`** / **`demo-habits-local-2026`**. Leave **Include my local habits in this account** unchecked when comparing the two copies. This command seeds the demo account and writes its current snapshot to `.local/demo-habits.json` for guest import, including any edits preserved from earlier seed runs. It adds missing records without changing existing records, passwords, settings or other accounts. Changes you make in guest mode and the demo account stay separate. `seed:local` regenerates the original sample data; `db:seed` exports the demo account's actual data.
+
+Both commands use the same deterministic generator, anchored to today's local date. To reproduce an exact snapshot across runs or on different days, set a date before either command:
+
+```powershell
+$env:SEED_DATE = '2026-11-10'
+npm.cmd run seed:local
+npm.cmd run db:seed
+Remove-Item Env:SEED_DATE
+```
+
+The database seed accepts only localhost database URLs and refuses production mode. Demo data is never loaded automatically into the app or a deployed database. The generated JSON lives in the Git-ignored `.local` directory.
+
 ## Deploy to Railway
 
 Deploy **one app service and one PostgreSQL service** in the same Railway project. The Docker image serves the Expo website and Express API from the same origin, including session authentication and account sync.

@@ -26,7 +26,7 @@ async function swipe(target: Locator, dx: number, dy = 0) {
 
 test('today is highlighted across the column in light, dark and reversed layouts', async ({ page }, testInfo) => {
   await page.goto('/'); await addHabit(page);
-  const today = (await headerDates(page))[0];
+  const today = (await headerDates(page)).at(-1)!;
   const header = page.getByTestId(`date-header-${today}`), cell = page.getByRole('button', { name: `Read books, ${today}, unknown`, exact: true });
   async function checkHighlight() {
     const color = await header.evaluate(el => getComputedStyle(el).backgroundColor);
@@ -41,17 +41,22 @@ test('today is highlighted across the column in light, dark and reversed layouts
   await checkHighlight();
   await page.screenshot({ path: `artifacts/${testInfo.project.name}-today-light.png` });
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: 'Reverse date order', exact: true })).toBeChecked();
   await page.getByRole('radio', { name: 'Dark', exact: true }).click();
   await page.getByRole('checkbox', { name: 'Reverse date order', exact: true }).click();
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
-  expect((await headerDates(page)).at(-1)).toBe(today);
+  expect((await headerDates(page))[0]).toBe(today);
   await checkHighlight();
-  await page.screenshot({ path: `artifacts/${testInfo.project.name}-today-dark-reversed.png` });
+  await page.screenshot({ path: `artifacts/${testInfo.project.name}-today-dark-normal.png` });
 });
 
 test('mouse drag changes dates both ways, respects today, and leaves entries untouched', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'Mouse interaction is tested in the desktop browser.');
   await page.goto('/'); await addHabit(page);
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Reverse date order', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: 'Reverse date order', exact: true })).not.toBeChecked();
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
   const today = (await headerDates(page))[0];
   const cell = page.getByRole('button', { name: `Read books, ${today}, unknown`, exact: true });
   await drag(page, cell, -150);
@@ -79,6 +84,10 @@ test('mouse drag changes dates both ways, respects today, and leaves entries unt
 test('touch swipes navigate dates without recording habits or swallowing later taps', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'phone-webkit', 'Touch interaction is tested in the iPhone Safari engine.');
   await page.goto('/'); await addHabit(page);
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Reverse date order', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: 'Reverse date order', exact: true })).not.toBeChecked();
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
   const today = (await headerDates(page))[0];
   await swipe(page.getByRole('button', { name: `Read books, ${today}, unknown`, exact: true }), -132);
   await expect.poll(async () => (await headerDates(page))[0]).not.toBe(today);
@@ -95,15 +104,29 @@ test('touch swipes navigate dates without recording habits or swallowing later t
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
   await swipe(headers(page).last(), 132);
   await expect.poll(async () => (await headerDates(page)).at(-1)).not.toBe(today);
+  await page.getByRole('button', { name: 'Filter and sort habits', exact: true }).tap();
   await page.getByRole('button', { name: 'Today', exact: true }).tap();
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).tap();
   expect((await headerDates(page)).at(-1)).toBe(today);
 });
 
 test('vertical list scrolling leaves the dates and habit entries unchanged', async ({ page }, testInfo) => {
-  await page.setViewportSize({ width: 390, height: 500 });
+  await page.setViewportSize({ width: testInfo.project.name === 'desktop-chromium' ? 1280 : 390, height: 500 });
   await page.goto('/');
   for (let i = 1; i <= 8; i++) await addHabit(page, `Habit ${i}`);
+  // Exercise a reserved scrollbar gutter as well as browsers with overlay scrollbars.
+  await page.addStyleTag({ content: '[data-testid="habit-list"] { overflow-y: scroll !important; scrollbar-gutter: stable; } [data-testid="habit-list"]::-webkit-scrollbar { display: block; width: 16px; }' });
   const dates = await headerDates(page), list = page.getByTestId('habit-list');
+  async function checkColumns() {
+    for (const date of dates) {
+      const header = await page.getByTestId(`date-header-${date}`).boundingBox();
+      const cell = await page.getByRole('button', { name: `Habit 8, ${date}, unknown`, exact: true }).boundingBox();
+      expect(Math.abs(header!.x - cell!.x)).toBeLessThan(1);
+      expect(Math.abs(header!.width - cell!.width)).toBeLessThan(1);
+    }
+  }
+  await checkColumns();
+  const headerTop = (await headers(page).first().boundingBox())!.y;
   if (testInfo.project.name === 'phone-webkit') {
     // Mobile WebKit exposes no wheel API; let its layout engine scroll the last row into view.
     await page.getByRole('button', { name: 'View Habit 8', exact: true }).scrollIntoViewIfNeeded();
@@ -111,6 +134,9 @@ test('vertical list scrolling leaves the dates and habit entries unchanged', asy
     await list.hover(); await page.mouse.wheel(0, 250);
   }
   await expect.poll(() => list.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
+  await checkColumns();
+  expect(Math.abs((await headers(page).first().boundingBox())!.y - headerTop)).toBeLessThan(1);
+  await page.screenshot({ path: `artifacts/${testInfo.project.name}-aligned-scrollbar.png` });
   expect(await headerDates(page)).toEqual(dates);
   await expect(page.getByRole('button', { name: /^Habit \d+, .*yes$/ })).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

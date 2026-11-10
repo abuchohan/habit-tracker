@@ -12,7 +12,9 @@
     "build:web": "npm run build:web --workspace expo-app",
     "typecheck": "npm run typecheck --workspace expo-app && npm run check-types --workspace server",
     "test": "tsx --test tests/*.test.ts",
-    "db:migrate": "npm run db:migrate --workspace server"
+    "db:migrate": "npm run db:migrate --workspace server",
+    "seed:local": "tsx scripts/seed-local.ts",
+    "db:seed": "npm run db:seed --workspace server"
   },
   "dependencies": {
     "zod": "^3.25.76"

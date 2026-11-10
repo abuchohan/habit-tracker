@@ -45,6 +45,13 @@ test('session accounts isolate sync data, retain newest edits and reject expired
     await request('/sync', { records: [], preferences: changed }, first);
     assert.deepEqual((await (await request('/sync', { records: [], preferences }, first)).json()).preferences, changed);
     assert.equal((await request('/sync', { records: [], preferences: { ...changed, values: { reverse: 'yes' } } }, first)).status, 400);
+    const timed = { ...newHabit(), name: 'Daily injection', type: 'time', timeFormat: '12h' };
+    const timedEntry = { id: entryId(timed.id, '2026-11-01'), kind: 'entry', habitId: timed.id, date: '2026-11-01', state: 'yes', value: null, time: '23:59', notes: 'Left side', version: version(), deleted: false };
+    assert.equal((await request('/sync', { records: [timed, timedEntry] }, first)).status, 200);
+    const syncedTimes = (await (await request('/sync', { records: [] }, first)).json()).records;
+    assert.deepEqual(syncedTimes.find((r: { id: string }) => r.id === timed.id), timed);
+    assert.deepEqual(syncedTimes.find((r: { id: string }) => r.id === timedEntry.id), timedEntry);
+    assert.equal((await request('/sync', { records: [{ ...timedEntry, time: '25:00' }] }, first)).status, 400);
     const me = await request('/auth/me', undefined, first); assert.equal(me.status, 200); assert.ok(me.headers.get('set-cookie')?.includes('HttpOnly'));
     assert.equal('password' in (await me.json()).user, false);
     await prisma.session.update({ where: { id: first.split('=')[1] }, data: { expiresAt: new Date(0) } });

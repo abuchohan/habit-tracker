@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, View, useWindowDimensions } from 'react-native';
 import Svg, { Line, Polyline, Rect, Circle } from 'react-native-svg';
-import { Habit, addDays, day, computeHistory, entriesFor, monthLength, schedule, streaks, weekday, csv, uid } from '../../shared/domain';
+import { Habit, addDays, day, computeHistory, entriesFor, monthLength, schedule, streaks, weekday, csv, uid, formatTime } from '../../shared/domain';
 import { useStore, saveHabit, reportError } from './store';
 import { Button, Choices, Icon, Label, Section, Sheet, useTheme } from './ui';
 import { foregroundOn, mono } from './design';
@@ -36,6 +36,7 @@ export function HabitDetail({ habit: h, onEdit, onEntry, onClose }: { habit: Hab
         <View style={{ flex: 1 }}><Label style={{ fontSize: 28, lineHeight: 36, letterSpacing: -0.8, fontWeight: '500' }}>{h.name}</Label><Label muted>{schedule(h)}{h.archived ? ' · Archived' : ''}</Label></View></View>
       {!!h.question && <Label>{h.question}</Label>}{!!h.description && <Label muted>{h.description}</Label>}
       {h.type === 'number' && <Label muted>{h.targetType === 'atLeast' ? 'At least' : 'At most'} {h.target} {h.unit} per {h.denominator === 1 ? 'day' : `${h.denominator} days`}</Label>}
+      {h.type === 'time' && <Label muted>{current?.time ? `Recorded today at ${formatTime(current.time, h.timeFormat)}` : 'Record a time for each completed day.'}</Label>}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 28 }}>{[[`${Math.round((current?.score ?? 0) * 100)}%`, 'Strength'], [String(streak), 'Current streak'], [String(best[0]?.length ?? 0), 'Best streak'], [String(count), 'Repetitions']].map(([value, label]) =>
         <View key={label}><Label style={{ fontSize: 30, lineHeight: 40, fontFamily: mono, letterSpacing: -1 }}>{value}</Label><Label muted style={{ fontSize: 13 }}>{label}</Label></View>)}</View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}><Button primary onPress={() => onEntry(today)}>Record today</Button><Button onPress={onEdit}>Edit habit</Button>
@@ -65,7 +66,7 @@ export function HabitDetail({ habit: h, onEdit, onEntry, onClose }: { habit: Hab
         {Array.from({ length: start + monthLength(month) }, (_, i) => {
           if (i < start) return <View key={i} style={{ width: '14.2857%' }} />;
           const date = addDays(month, i - start), e = byDate.get(date), future = date > today;
-          return <Pressable key={i} disabled={future} accessibilityRole="button" accessibilityLabel={`${date}: ${e?.state ?? 'no data'}${e?.value !== null && e?.value !== undefined ? `, ${e.value} ${h.unit}` : ''}${e?.notes ? ', has note' : ''}`} onPress={() => onEntry(date)}
+          return <Pressable key={i} disabled={future} accessibilityRole="button" accessibilityLabel={`${date}: ${e?.state ?? 'no data'}${h.type === 'time' && e?.time ? `, ${formatTime(e.time, h.timeFormat)}` : ''}${e?.value !== null && e?.value !== undefined ? `, ${e.value} ${h.unit}` : ''}${e?.notes ? ', has note' : ''}`} onPress={() => onEntry(date)}
             style={({ pressed }) => ({ width: '14.2857%', padding: 3, opacity: pressed ? 0.7 : 1 })}><View style={{ minHeight: 48, borderRadius: 10, alignItems: 'center', justifyContent: 'center', opacity: future ? 0.25 : 1,
               backgroundColor: e?.state === 'skip' ? t.line : e?.completed ? e.state === 'auto' ? t.soft : h.color : t.card,
               borderWidth: date === today ? 1 : 0, borderColor: h.color }}>
@@ -74,6 +75,9 @@ export function HabitDetail({ habit: h, onEdit, onEntry, onClose }: { habit: Hab
             </View></Pressable>;
         })}</View><Label muted style={{ fontSize: 13 }}>Select any past day to edit its entry or add a note.</Label>
     </Section>
+    {h.type === 'time' && <Section title="Recent times">
+      {history.some(e => e.time) ? [...history].reverse().filter(e => e.time).slice(0, 30).map(e => <Button key={e.date} label={`Edit time for ${e.date}`} onPress={() => onEntry(e.date)} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}><Label muted style={{ fontSize: 14 }}>{e.date}</Label><Label style={{ fontFamily: mono, fontSize: 14 }}>{formatTime(e.time!, h.timeFormat)}</Label></Button>) : <Label muted>No times recorded yet.</Label>}
+    </Section>}
     </View>
     <View style={{ flex: wide ? 1 : undefined, width: wide ? undefined : '100%', gap: 24 }}>
     <Section title="Best streaks">{best.length ? best.map(run => <View key={run.start} style={{ gap: 4 }}><View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Label muted style={{ fontSize: 13 }}>{run.start} — {run.end}</Label><Label>{run.length} days</Label></View>

@@ -53,7 +53,7 @@ export function writeLoop(SQL: SqlJsStatic, records: HabitRecord[]): Uint8Array 
       db.run('INSERT INTO Habits VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [i + 1, Number(h.archived), color >= 0 ? color : 5, h.description, h.denominator, h.numerator, 0, h.name, h.order,
         h.reminder ? Number(h.reminder.slice(0, 2)) : null, h.reminder ? Number(h.reminder.slice(3)) : null, h.reminderDays.reduce((a,d) => a | (1 << d), 0), h.type === 'number' ? 1 : 0, h.targetType === 'atMost' ? 1 : 0, h.target, h.unit, h.question, h.id, h.category]);
       for (const e of records) if (e.kind === 'entry' && e.habitId === h.id && !e.deleted) db.run('INSERT INTO Repetitions (habit,timestamp,value,notes) VALUES (?,?,?,?)',
-        [i + 1, +new Date(e.date + 'T00:00:00Z'), e.state === 'skip' ? 3 : e.state === 'unknown' ? -1 : h.type === 'number' ? Math.round((e.value ?? 0) * 1000) : e.state === 'yes' ? 2 : 0, e.notes]);
+        [i + 1, +new Date(e.date + 'T00:00:00Z'), e.state === 'skip' ? 3 : e.state === 'unknown' ? -1 : h.type === 'number' ? Math.round((e.value ?? 0) * 1000) : e.state === 'yes' ? 2 : 0, h.type === 'time' && e.state === 'yes' && e.time ? `Time: ${e.time}${e.notes ? `\n${e.notes}` : ''}` : e.notes]);
     });
     return db.export();
   } finally { db.close(); }

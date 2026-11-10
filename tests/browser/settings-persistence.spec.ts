@@ -9,15 +9,21 @@ async function openSettings(page: Page) {
 async function closeDialog(page: Page) {
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
 }
+async function openAccount(page: Page) {
+  const account = page.getByRole('button', { name: 'Account and sync status', exact: true });
+  if (await account.isVisible()) { await account.click(); return; }
+  await openSettings(page);
+  await page.getByRole('dialog').getByRole('button', { name: /^(Connect a sync account|.*@example\.com)$/ }).click();
+}
 async function connectAccount(page: Page, email = 'settings@example.com') {
-  await page.getByRole('button', { name: 'Account and sync status', exact: true }).click();
+  await openAccount(page);
   await page.getByRole('textbox', { name: 'Email', exact: true }).fill(email);
   await page.getByRole('textbox', { name: 'Password', exact: true }).fill('test-password');
   await page.getByRole('button', { name: 'Connect account', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Close dialog', exact: true })).toHaveCount(0);
 }
 async function syncNow(page: Page) {
-  await page.getByRole('button', { name: 'Account and sync status', exact: true }).click();
+  await openAccount(page);
   const sync = page.getByRole('button', { name: 'Sync now', exact: true });
   await expect(sync).toBeEnabled();
   await sync.click();
@@ -84,6 +90,8 @@ test('account settings follow devices, survive offline edits and stay separate f
     const other = await second.newPage();
     await page.goto('/');
     await openSettings(page);
+    await page.getByRole('checkbox', { name: 'Reverse date order', exact: true }).click();
+    await expect(page.getByRole('checkbox', { name: 'Reverse date order', exact: true })).not.toBeChecked();
     await page.getByRole('checkbox', { name: 'Enable skip days', exact: true }).click();
     await expect(page.getByRole('checkbox', { name: 'Enable skip days', exact: true })).toBeChecked();
     await closeDialog(page);
@@ -119,7 +127,7 @@ test('account settings follow devices, survive offline edits and stay separate f
     await page.getByRole('checkbox', { name: 'Enable skip days', exact: true }).click();
     await expect.poll(() => remote.get('settings@example.com')?.values.skip).toBe(false);
     await closeDialog(page);
-    await page.getByRole('button', { name: 'Account and sync status', exact: true }).click();
+    await openAccount(page);
     await page.getByRole('button', { name: 'Sign out', exact: true }).click();
     await openSettings(page);
     await expect(page.getByRole('checkbox', { name: 'Enable skip days', exact: true })).toBeChecked();
