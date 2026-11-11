@@ -29,7 +29,7 @@ import {
   initialize,
   useStore,
   saveEntry,
-  saveRecords,
+  reorderHabits,
   reportError,
   clearError,
   sync,
@@ -60,6 +60,7 @@ import {
   useTouchDevice,
 } from "./src/platform";
 import { useDateNavigation } from "./src/useDateNavigation";
+import { HabitDragTarget, useHabitDrag } from "./src/useHabitDrag";
 import { face, mono, webClass } from "./src/design";
 
 export default function App() {
@@ -83,7 +84,6 @@ export default function App() {
     [completion, setCompletion] = useState("all"),
     [sort, setSort] = useState("manual");
   const [offset, setOffset] = useState(0),
-    [reordering, setReordering] = useState(false),
     [now, setNow] = useState(new Date()),
     [token] = useState(() => resetToken());
   const [category, setCategory] = useState("");
@@ -104,13 +104,13 @@ export default function App() {
     sidebar = width >= 1000 && !compact,
     cellWidth = mobile ? 44 : 56;
   const gutter = mobile ? 16 : width < 1200 ? 24 : 48,
-    canvasWidth = Math.min(width - (sidebar ? 216 : 0), 1320) - gutter * 2;
+    canvasWidth = Math.min(width - (sidebar ? 216 : 0), 1320) - (compact ? 0 : gutter * 2);
   const count = Math.max(
     3,
     Math.min(
       7,
       Math.floor(
-        (canvasWidth - (mobile ? 144 : 280) - (reordering ? 44 : 0)) /
+        (canvasWidth - (mobile ? 144 : 280)) /
           cellWidth,
       ),
     ),
@@ -194,6 +194,9 @@ export default function App() {
             : a.order - b.order || a.id.localeCompare(b.id),
     );
   const selectedHabit = habits.find((h) => h.id === selected);
+  const habitDrag = useHabitDrag(list.map(h => h.id), (id, targetId, ids) => {
+    reorderHabits(id, targetId, ids).catch(reportError);
+  });
   function toggle(h: Habit, date: string) {
     if (h.type !== "boolean" || !store.preferences.tapToToggle) {
       setEntry({ habit: h, date });
@@ -220,22 +223,8 @@ export default function App() {
     }).catch(reportError);
   }
   async function move(h: Habit, delta: number) {
-    const all = [...habits].sort(
-      (a, b) => a.order - b.order || a.id.localeCompare(b.id),
-    );
-    const i = all.findIndex((v) => v.id === h.id),
-      other = all[i + delta];
-    if (!other) return;
-    [all[i], all[i + delta]] = [all[i + delta], all[i]];
-    // Normalize positions in one write so repeated moves remain deterministic across sync.
-    const { version } = await import("../shared/domain");
-    await saveRecords(
-      all.map((habit, order) => ({
-        ...habit,
-        order,
-        version: version(habit.version),
-      })),
-    );
+    const other = list[list.findIndex(v => v.id === h.id) + delta];
+    if (other) await reorderHabits(h.id, other.id, list.map(v => v.id));
   }
   const active = habits.filter((h) => !h.archived);
   const done = active.filter(
@@ -674,8 +663,8 @@ export default function App() {
                 width: "100%",
                 maxWidth: 1320,
                 alignSelf: "center",
-                paddingHorizontal: gutter,
-                paddingVertical: compact ? 12 : 0,
+                paddingHorizontal: compact && !selectedHabit ? 0 : gutter,
+                paddingVertical: compact && selectedHabit ? 12 : 0,
               }}
             >
               {!compact && height >= 480 && (
@@ -919,15 +908,15 @@ export default function App() {
                     </View>
                   )}
                   <View
-                    {...navigation.panHandlers}
+                    {...(habitDrag.drag ? {} : navigation.panHandlers)}
                     testID="date-grid"
                     style={[
                       {
                         flex: 1,
                         minHeight: 0,
-                        borderWidth: 1,
+                        borderWidth: compact ? 0 : 1,
                         borderColor: t.line,
-                        borderRadius: 16,
+                        borderRadius: compact ? 0 : 16,
                         overflow: "hidden",
                         backgroundColor: t.paper,
                       },
@@ -942,6 +931,12 @@ export default function App() {
                     {/* Share the scrollbar gutter so header and entry columns stay aligned. */}
                     <ScrollView
                       testID="habit-list"
+                      ref={habitDrag.scroll}
+                      scrollEnabled={!habitDrag.drag}
+                      onScroll={event => habitDrag.onScroll(event.nativeEvent.contentOffset.y)}
+                      scrollEventThrottle={16}
+                      onLayout={event => habitDrag.onSize(event.nativeEvent.layout.height)}
+                      onContentSizeChange={(_width, height) => habitDrag.onContentSize(height)}
                       stickyHeaderIndices={list.length > 0 ? [0] : undefined}
                       contentContainerStyle={{ paddingBottom: 16 }}
                     >
@@ -962,9 +957,7 @@ export default function App() {
                             paddingLeft: mobile ? 16 : 24,
                           }}
                         >
-                          <Label muted style={{ fontSize: 13 }}>
-                            {reordering ? "Reorder habits" : "Habit"}
-                          </Label>
+                          <Label muted style={{ fontSize: 13 }}>Habit</Label>
                         </View>
                         {dates.map((date, column) => (
                           <View
@@ -979,6 +972,7 @@ export default function App() {
                                 paddingVertical: 10,
                                 alignItems: "center",
                                 gap: 2,
+                                backgroundColor: column % 2 === 0 ? t.paper : t.card,
                               },
                               date === today && todayStyle,
                             ]}
@@ -1012,7 +1006,12 @@ export default function App() {
                         return (
                           <View
                             key={h.id}
+                            testID={`habit-row-${h.id}`}
+                            onLayout={event => habitDrag.layout(h.id, event.nativeEvent.layout)}
                             style={{
+                              transform: [{ translateY: habitDrag.shift(h.id) }],
+                              zIndex: habitDrag.drag?.id === h.id ? 2 : 0,
+                              backgroundColor: t.paper,
                               flexDirection: "row",
                               minHeight: mobile ? 84 : 88,
                               borderBottomWidth: 1,
@@ -1020,20 +1019,18 @@ export default function App() {
                               alignItems: "stretch",
                             }}
                           >
-                            <Pressable
-                              accessibilityRole="button"
-                              accessibilityLabel={`View ${h.name}`}
+                            <HabitDragTarget
+                              name={h.name} enabled={sort === "manual"}
+                              dragging={habitDrag.drag?.id === h.id}
+                              onStart={() => habitDrag.start(h.id)}
+                              onMove={habitDrag.move} onFinish={habitDrag.finish}
+                              onScrollStart={habitDrag.prepareScroll} onScrollMove={habitDrag.scrollBeforeHold}
+                              onStep={delta => move(h, delta).catch(reportError)}
                               onPress={() => {
                                 if (!navigation.suppressPress())
                                   setSelected(h.id);
                               }}
-                              style={({
-                                hovered,
-                                pressed,
-                              }: {
-                                pressed: boolean;
-                                hovered?: boolean;
-                              }) => ({
+                              style={{
                                 flex: 1,
                                 minWidth: 0,
                                 flexDirection: "row",
@@ -1041,9 +1038,7 @@ export default function App() {
                                 alignItems: "center",
                                 paddingLeft: mobile ? 16 : 24,
                                 paddingRight: 8,
-                                backgroundColor:
-                                  hovered || pressed ? t.card : "transparent",
-                              })}
+                              }}
                             >
                               <Ring
                                 color={h.color}
@@ -1077,31 +1072,7 @@ export default function App() {
                                   </Label>
                                 )}
                               </View>
-                            </Pressable>
-                            {reordering && (
-                              <View style={{ width: 44 }}>
-                                <Button
-                                  label={`Move ${h.name} up`}
-                                  onPress={() => move(h, -1).catch(reportError)}
-                                  style={{
-                                    paddingHorizontal: 8,
-                                    borderWidth: 0,
-                                  }}
-                                >
-                                  <Icon name="up" size={16} />
-                                </Button>
-                                <Button
-                                  label={`Move ${h.name} down`}
-                                  onPress={() => move(h, 1).catch(reportError)}
-                                  style={{
-                                    paddingHorizontal: 8,
-                                    borderWidth: 0,
-                                  }}
-                                >
-                                  <Icon name="down" size={16} />
-                                </Button>
-                              </View>
-                            )}
+                            </HabitDragTarget>
                             {dates.map((date, column) => {
                               const e = byDate.get(date),
                                 state = e?.state ?? "unknown",
@@ -1131,6 +1102,7 @@ export default function App() {
                                       width: cellWidth,
                                       justifyContent: "center",
                                       alignItems: "center",
+                                      backgroundColor: column % 2 === 0 ? t.paper : t.card,
                                     },
                                     date === today && todayStyle,
                                     (hovered || pressed) &&
@@ -1140,8 +1112,22 @@ export default function App() {
                                   ]}
                                 >
                                   {clock ? <>
-                                    <Label numberOfLines={1} style={{ fontFamily: mono, fontSize: mobile ? 13 : 14, fontWeight: '500' }}>{clock[0]}</Label>
-                                    {clock[1] && <Label muted style={{ fontSize: 13, lineHeight: 18 }}>{clock[1]}</Label>}
+                                    <View style={{
+                                      width: 36,
+                                      minHeight: 36,
+                                      paddingVertical: 2,
+                                      borderRadius: 8,
+                                      borderWidth: 1,
+                                      borderColor: e?.completed ? t.mint : t.line,
+                                      backgroundColor: e?.completed ? t.soft : t.paper,
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                    }}>
+                                      {clock[0].split(':').map((part, index) => (
+                                        <Label key={index} numberOfLines={1} style={{ fontFamily: mono, fontSize: 13, lineHeight: 16, fontWeight: '500' }}>{part}</Label>
+                                      ))}
+                                    </View>
+                                    {clock[1] && <Label muted style={{ fontSize: 12, lineHeight: 16 }}>{clock[1]}</Label>}
                                   </> : h.type === "number" && state !== "skip" ? (
                                     <>
                                       <Label
@@ -1374,10 +1360,7 @@ export default function App() {
                   ["color", "Colour"],
                   ["score", "Strength"],
                 ]}
-                onChange={(v) => {
-                  setSort(v);
-                  if (v !== "manual") setReordering(false);
-                }}
+                onChange={setSort}
               />
               {habits.some((h) => h.category) && (
                 <>
@@ -1401,15 +1384,6 @@ export default function App() {
                   Reset filters
                 </Button>
               )}
-              <Button
-                onPress={() => {
-                  setSort("manual");
-                  setReordering((v) => !v);
-                  setFilters(false);
-                }}
-              >
-                {reordering ? "Finish reordering" : "Reorder habits"}
-              </Button>
               <Button primary onPress={() => setFilters(false)}>
                 Done
               </Button>

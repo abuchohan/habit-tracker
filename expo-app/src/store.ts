@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { z } from 'zod';
-import { HabitRecord, Habit, Entry, Preferences, backupSchema, preferencesSchema, savedPreferencesSchema, defaultPreferences, seedPreferences, mergePreferences, mergeRecords, entryId, version, recordSchema } from '../../shared/domain';
+import { HabitRecord, Habit, Entry, Preferences, backupSchema, preferencesSchema, savedPreferencesSchema, defaultPreferences, seedPreferences, mergePreferences, mergeRecords, entryId, version, recordSchema, reorderHabitRecords } from '../../shared/domain';
 import { getItem, setItem, requestPersistence } from './storage';
 import { api, ApiError } from './api';
 
@@ -81,6 +81,17 @@ export function saveRecords(incoming: HabitRecord[]) {
 }
 export async function saveHabit(habit: Habit) {
   await saveRecords([{ ...habit, version: version(state.records.find(r => r.id === habit.id)?.version) }]);
+}
+export function reorderHabits(habitId: string, targetId: string, visibleIds: string[]) {
+  return serial(async () => {
+    // Compute inside the queue so rapid moves use the latest saved records.
+    const changes = reorderHabitRecords(state.records, habitId, targetId, visibleIds);
+    if (!changes.length) return;
+    const records = mergeRecords(state.records, changes);
+    await setItem(key(state.account), JSON.stringify(records));
+    editRevision++;
+    emit({ records, error: null });
+  }).then(scheduleSync);
 }
 export function saveEntry(habitId: string, date: string, fields: Pick<Entry, 'state' | 'value' | 'notes' | 'time'>) {
   const id = entryId(habitId, date);

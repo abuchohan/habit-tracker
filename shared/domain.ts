@@ -110,6 +110,20 @@ export function mergeRecords(local: HabitRecord[], remote: HabitRecord[]) {
 export function entriesFor(records: HabitRecord[], habitId: string) {
   return records.filter((r): r is Entry => r.kind === 'entry' && r.habitId === habitId && !r.deleted);
 }
+// Reorder the visible slots; filtered-out and archived habits retain their places.
+export function reorderHabitRecords(records: HabitRecord[], habitId: string, targetId: string, visibleIds: string[]): Habit[] {
+  const all = records.filter((r): r is Habit => r.kind === 'habit' && !r.deleted)
+    .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
+  const visible = new Set(visibleIds);
+  const slots = all.filter(h => visible.has(h.id));
+  const from = slots.findIndex(h => h.id === habitId), to = slots.findIndex(h => h.id === targetId);
+  if (from < 0 || to < 0 || from === to) return [];
+  slots.splice(to, 0, slots.splice(from, 1)[0]);
+  let index = 0;
+  const reordered = all.map(h => visible.has(h.id) ? slots[index++] : h);
+  const after = all.reduce((latest, h) => h.version > latest ? h.version : latest, '');
+  return reordered.flatMap((h, order) => h.order === order ? [] : [{ ...h, order, version: version(after) }]);
+}
 export function schedule(h: Habit) { return h.denominator === 1 ? 'Every day' : h.numerator === 1 ? `Every ${h.denominator} days` : `${h.numerator} times in ${h.denominator} days`; }
 export type ComputedDay = { date: string; state: Entry['state'] | 'auto'; value: number | null; time: string | null; notes: string; completed: boolean; score: number };
 export function computeHistory(h: Habit, entries: Entry[], today = day(), firstWeekday = 1): ComputedDay[] {

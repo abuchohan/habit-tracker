@@ -2,6 +2,8 @@
 
 An Expo / React Native version of Loop Habit Tracker, with a browser interface for phones and Windows. The app works locally without an account. Optional accounts sync habits through an independent copy of the Spring Board backend (Express, Prisma, PostgreSQL, httpOnly cookie sessions).
 
+With **Filter & sort > My order** selected (the default), hold a habit's name until the grip appears, drag it up or down, and release to save its position. The list scrolls when you drag near its edges. Manual order is saved offline and syncs with your account. Filtered moves preserve the positions of hidden habits. Keyboard users can focus a habit and press **Alt+Up/Down**; **Escape** cancels a drag.
+
 ## Run locally
 
 Use Node 24 LTS and npm. In PowerShell, use `npm.cmd` / `npx.cmd` if script execution is disabled.

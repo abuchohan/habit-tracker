@@ -7,6 +7,7 @@ export const Theme = createContext(light);
 export const ReducedMotion = createContext(false);
 export const useTheme = () => useContext(Theme);
 const paths = {
+  grip: 'M8 6h1m6 0h1M8 12h1m6 0h1M8 18h1m6 0h1',
   plus: 'M12 5v14M5 12h14', close: 'm6 6 12 12M6 18 18 6', check: 'm5 12 4 4L19 6',
   back: 'm14 6-6 6 6 6', next: 'm10 6 6 6-6 6', arrow: 'M4 12h16m-6-6 6 6-6 6',
   filter: 'M4 7h16M7 12h10M10 17h4', search: 'm16 16 4 4M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0',

@@ -8,7 +8,11 @@ The habit grid now sits directly below a single top bar on phones and touch devi
 
 The filter sheet contains search, active/archive/all collections, sorting and the earlier/Today/later date controls with month context. Horizontal swiping continues to navigate the grid. Account and sync remain accessible through Settings, and errors still appear when an operation fails. Pointer-driven desktop layouts retain their existing workspace and context.
 
-Compact layout follows narrow viewports or touch capability, including wide tablets and touch laptops. Native platforms always use it. Web capability changes update the layout without a reload. Controls retain 44px touch targets; the grid has equal side gutters and independently scrolls its habit list.
+Compact layout follows narrow viewports or touch capability, including wide tablets and touch laptops. Native platforms always use it. Web capability changes update the layout without a reload. Controls retain 44px touch targets; the grid runs edge to edge without an outer border or rounded frame and independently scrolls its habit list. Habit details retain their content gutters.
+
+Date columns alternate between the existing paper and card surfaces in every theme, with matching shading in their headers and habit entries. Today's highlight takes precedence over the alternating shades. Recorded time entries use compact boxes with hours above minutes, with AM/PM below when selected. Accessible labels retain the complete formatted time.
+
+Follow-up verification (11 November): frontend lint, app/server type checks and production export passed. All 12 applicable existing Chrome and iPhone WebKit checks for responsive layouts, collections, keyboard controls, date navigation, column alignment and time entry passed; four platform-specific checks were skipped. Populated phone screenshots of alternating rows, stacked times and dark mode were inspected. The design gate reports 21 marketing-layout findings, including the empty mobile grid lacking an illustrative visual; these do not justify adding promotional content or restoring the outer container. The complete findings remain in `.taste-skill/gate.json`. Native physical devices and maximum Dynamic Type were not tested.
 
 ## Design taste application
 

@@ -1,6 +1,6 @@
 {
  "start": "2026-11-10T18:19:11.686Z",
- "round": 1,
+ "round": 2,
  "idle": 0,
  "errors": 0,
  "status": "fail",
@@ -11,6 +11,15 @@
    "status": "fail",
    "fails": 20,
    "round": 1,
+   "reused": false,
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-11T13:32:31.230Z",
+   "mode": "manual",
+   "status": "fail",
+   "fails": 21,
+   "round": 2,
    "reused": false,
    "stopHookActive": false
   }
@@ -28,11 +37,11 @@
   "by": "gate.mjs --start"
  },
  "manual": true,
- "roundKey": "91b746bb1d9ae783:da39a3ee",
+ "roundKey": "d999ae5d9e316a28:da39a3ee",
  "roundFree": false,
  "idleFree": false,
  "blockKey": null,
- "fp": "91b746bb1d9ae783",
+ "fp": "d999ae5d9e316a28",
  "page": "expo-app/dist/index.html",
  "found": {
   "fails": [
@@ -118,7 +127,7 @@
    },
    {
     "check": "hero-screen",
-    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logWednesday, 11 November 2026Add \"",
     "msg": "the hero ends at 228px on a 900px screen, 672px above the fold: it ends at the fold, 1px either way (SR-1)",
     "fix": "make the hero exactly one screen (height: 100svh, its content fitted inside), never taller or shorter",
     "widths": [
@@ -129,7 +138,7 @@
      "hero-screen"
     ],
     "wheres": [
-     "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\""
+     "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logWednesday, 11 November 2026Add \""
     ]
    },
    {
@@ -212,7 +221,7 @@
     ],
     "wheres": [
      "main#habit-content > div.css-g5y9jx:nth-of-type(1) > div.css-g5y9jx > h1.css-146c3p1 \"Habit log\"",
-     "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+     "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logWednesday, 11 November 2026Add \"",
      "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \"",
      "main#habit-content > div.css-g5y9jx:nth-of-type(3) \"November 2026Today\""
     ]
@@ -235,7 +244,7 @@
    },
    {
     "check": "container-edges",
-    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+    "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logWednesday, 11 November 2026Add \"",
     "msg": "the content of section 1 runs 264px from the left and 48px from the right (read from its outermost blocks: no .wrap): 264 and 48px are not one margin; the margin is 64-120px at 1440px (one container, equal margins, 2px either way) (SR-6)",
     "fix": "use one container on every section and the nav (.wrap): one margin left and right, 64-120px on a desktop, 16-24px on a phone",
     "widths": [
@@ -246,7 +255,7 @@
      "container-edges"
     ],
     "wheres": [
-     "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\""
+     "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logWednesday, 11 November 2026Add \""
     ]
    },
    {
@@ -330,9 +339,25 @@
     ]
    },
    {
+    "check": "no-visual",
+    "where": "main#habit-content > div.css-g5y9jx \"No habits yet. Track a yes/no habit or a\"",
+    "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+    "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+    "widths": [
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "no-visual"
+    ],
+    "wheres": [
+     "main#habit-content > div.css-g5y9jx \"No habits yet. Track a yes/no habit or a\""
+    ]
+   },
+   {
     "check": "empty-area",
     "where": "main#habit-content > div.css-g5y9jx \"No habits yet. Track a yes/no habit or a\"",
-    "msg": "65% of the section is empty: 496px under its last (button.css-g5y9jx.r-1loqt21), in its 756px of rows (WARN over 35%, FAIL over 50%)",
+    "msg": "65% of the section is empty: 512px under its last (button.css-g5y9jx.r-1loqt21), in its 780px of rows (WARN over 35%, FAIL over 50%)",
     "fix": "fill the section: a picture or a second column beside the words, or more of its own content; the section stays one or two screens tall (T-height)",
     "widths": [
      390
@@ -447,8 +472,8 @@
   ],
   "crashed": [],
   "seconds": {
-   "consistency": 54,
-   "layout": 4
+   "consistency": 51,
+   "layout": 3
   }
  },
  "open": [
@@ -534,7 +559,7 @@
   },
   {
    "check": "hero-screen",
-   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logWednesday, 11 November 2026Add \"",
    "msg": "the hero ends at 228px on a 900px screen, 672px above the fold: it ends at the fold, 1px either way (SR-1)",
    "fix": "make the hero exactly one screen (height: 100svh, its content fitted inside), never taller or shorter",
    "widths": [
@@ -545,7 +570,7 @@
     "hero-screen"
    ],
    "wheres": [
-    "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\""
+    "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logWednesday, 11 November 2026Add \""
    ]
   },
   {
@@ -628,7 +653,7 @@
    ],
    "wheres": [
     "main#habit-content > div.css-g5y9jx:nth-of-type(1) > div.css-g5y9jx > h1.css-146c3p1 \"Habit log\"",
-    "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+    "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logWednesday, 11 November 2026Add \"",
     "main#habit-content > div.css-g5y9jx:nth-of-type(2) \"0 habits in your logSearch habitsFilter \"",
     "main#habit-content > div.css-g5y9jx:nth-of-type(3) \"November 2026Today\""
    ]
@@ -651,7 +676,7 @@
   },
   {
    "check": "container-edges",
-   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\"",
+   "where": "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logWednesday, 11 November 2026Add \"",
    "msg": "the content of section 1 runs 264px from the left and 48px from the right (read from its outermost blocks: no .wrap): 264 and 48px are not one margin; the margin is 64-120px at 1440px (one container, equal margins, 2px either way) (SR-6)",
    "fix": "use one container on every section and the nav (.wrap): one margin left and right, 64-120px on a desktop, 16-24px on a phone",
    "widths": [
@@ -662,7 +687,7 @@
     "container-edges"
    ],
    "wheres": [
-    "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logTuesday, 10 November 2026Add ha\""
+    "main#habit-content > div.css-g5y9jx:nth-of-type(1) \"Habit logWednesday, 11 November 2026Add \""
    ]
   },
   {
@@ -746,9 +771,25 @@
    ]
   },
   {
+   "check": "no-visual",
+   "where": "main#habit-content > div.css-g5y9jx \"No habits yet. Track a yes/no habit or a\"",
+   "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+   "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+   "widths": [
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "no-visual"
+   ],
+   "wheres": [
+    "main#habit-content > div.css-g5y9jx \"No habits yet. Track a yes/no habit or a\""
+   ]
+  },
+  {
    "check": "empty-area",
    "where": "main#habit-content > div.css-g5y9jx \"No habits yet. Track a yes/no habit or a\"",
-   "msg": "65% of the section is empty: 496px under its last (button.css-g5y9jx.r-1loqt21), in its 756px of rows (WARN over 35%, FAIL over 50%)",
+   "msg": "65% of the section is empty: 512px under its last (button.css-g5y9jx.r-1loqt21), in its 780px of rows (WARN over 35%, FAIL over 50%)",
    "fix": "fill the section: a picture or a second column beside the words, or more of its own content; the section stays one or two screens tall (T-height)",
    "widths": [
     390
@@ -781,5 +822,5 @@
  ],
  "waived": [],
  "warnCount": 8,
- "at": "2026-11-10T18:30:55.526Z"
+ "at": "2026-11-11T13:32:31.231Z"
 }
