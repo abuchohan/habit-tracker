@@ -96,6 +96,8 @@ Today is highlighted through the date header and habit entries. Swipe horizontal
 
 Choose **Settings > Days shown on mobile** to display 1–5 date columns (default: 5). Narrow screens may display fewer columns to preserve touch targets. Desktop keeps up to seven columns. This preference is saved locally, included in JSON backups and synced with a connected account.
 
+Enable **Settings > Compact habit rows** for thinner rows on mobile and desktop. It reduces rows from 84–88px to a minimum of 56px and hides category subtitles in the list, while keeping names readable and entry buttons easy to tap. Turn it off anytime to restore the standard spacing. The preference is saved locally, backed up and synced with your account.
+
 ## Data and sync
 
 - Web data is saved in IndexedDB; native builds use AsyncStorage.

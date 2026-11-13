@@ -56,6 +56,7 @@ export const preferencesSchema = z.object({
   dayOffset: z.number().int().min(0).max(6).default(0), tapToToggle: z.boolean().default(true),
   reducedMotion: z.boolean().default(false),
   mobileDays: z.number().int().min(1).max(5).default(5),
+  compactHabits: z.boolean().default(false),
 });
 export const savedPreferencesSchema = z.object({
   version: base.version,

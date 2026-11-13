@@ -1,0 +1,36 @@
+import { test, expect } from '@playwright/test';
+
+test('compact rows are thinner, keep usable entry targets, persist and can be restored', async ({ page }, info) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Add habit', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Name', exact: true }).fill('Read books');
+  await page.getByRole('textbox', { name: 'Category (optional)', exact: true }).fill('Learning');
+  await page.getByRole('button', { name: 'Save habit', exact: true }).click();
+  const row = page.locator('[data-testid^="habit-row-"]').first();
+  await expect(row).toBeVisible();
+  const originalHeight = (await row.boundingBox())!.height;
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const toggle = page.getByRole('checkbox', { name: 'Compact habit rows', exact: true });
+  await expect(toggle).not.toBeChecked();
+  await toggle.click();
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+  await expect.poll(async () => (await row.boundingBox())!.height).toBeLessThan(originalHeight);
+  expect((await row.boundingBox())!.height).toBe(56);
+  await expect(row.getByText('Learning', { exact: true })).toHaveCount(0);
+  const entry = row.getByRole('button', { name: /^Read books, .*unknown$/ }).last();
+  const target = (await entry.boundingBox())!;
+  expect(target.width).toBeGreaterThanOrEqual(44);
+  expect(target.height).toBeGreaterThanOrEqual(44);
+  await entry.click();
+  await expect(row.getByRole('button', { name: /^Read books, .*yes$/ })).toHaveCount(1);
+  await page.reload();
+  await expect.poll(async () => (await row.boundingBox())?.height).toBe(56);
+  await page.screenshot({ path: `artifacts/${info.project.name}-compact-habits.png` });
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(toggle).toBeChecked();
+  await toggle.click();
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+  await expect.poll(async () => (await row.boundingBox())!.height).toBe(originalHeight);
+  await page.getByRole('button', { name: 'View Read books', exact: true }).click();
+  await expect(page.getByText('Habit strength', { exact: true })).toBeVisible();
+});

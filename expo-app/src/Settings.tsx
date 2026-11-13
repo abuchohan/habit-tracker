@@ -22,6 +22,7 @@ export function Settings({ onClose, onAccount }: { onClose: () => void; onAccoun
   return <Sheet title="Settings" onClose={onClose}>
     <Label style={{ fontSize: 20, fontWeight: '500' }}>Appearance</Label>
     <Choices value={p.theme} options={[["system", 'System'], ['light', 'Light'], ['dark', 'Dark'], ['black', 'Pure black']]} onChange={theme => pref({ theme })} />
+    <Check label="Compact habit rows" detail="Show thinner rows to fit more habits on screen. Hide category subtitles in the list." value={p.compactHabits} onChange={compactHabits => pref({ compactHabits })} />
     <View style={{ gap: 8 }}>
       <Label>Days shown on mobile</Label>
       <Choices value={String(p.mobileDays)} options={[["1", '1 day'], ['2', '2 days'], ['3', '3 days'], ['4', '4 days'], ['5', '5 days']]} onChange={v => pref({ mobileDays: Number(v) })} />

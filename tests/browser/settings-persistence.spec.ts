@@ -101,6 +101,8 @@ test('account settings follow devices, survive offline edits and stay separate f
     await expect.poll(() => remote.get('settings@example.com')?.values.reverse).toBe(true);
     await page.getByRole('radio', { name: '3 days', exact: true }).click();
     await expect.poll(() => remote.get('settings@example.com')?.values.mobileDays).toBe(3);
+    await page.getByRole('checkbox', { name: 'Compact habit rows', exact: true }).click();
+    await expect.poll(() => remote.get('settings@example.com')?.values.compactHabits).toBe(true);
     await closeDialog(page);
     await other.goto('/');
     await connectAccount(other);
@@ -108,6 +110,7 @@ test('account settings follow devices, survive offline edits and stay separate f
     await expect(other.getByRole('checkbox', { name: 'Reverse date order', exact: true })).toBeChecked();
     await expect(other.getByRole('checkbox', { name: 'Enable skip days', exact: true })).toBeChecked();
     await expect(other.getByRole('radio', { name: '3 days', exact: true })).toBeChecked();
+    await expect(other.getByRole('checkbox', { name: 'Compact habit rows', exact: true })).toBeChecked();
     await closeDialog(other);
 
     offline = true;

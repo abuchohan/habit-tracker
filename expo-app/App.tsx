@@ -1020,7 +1020,7 @@ export default function App() {
                               zIndex: habitDrag.drag?.id === h.id ? 2 : 0,
                               backgroundColor: t.paper,
                               flexDirection: "row",
-                              minHeight: mobile ? 84 : 88,
+                              minHeight: store.preferences.compactHabits ? 56 : mobile ? 84 : 88,
                               borderBottomWidth: 1,
                               borderColor: t.line,
                               alignItems: "stretch",
@@ -1041,16 +1041,17 @@ export default function App() {
                                 flex: 1,
                                 minWidth: 0,
                                 flexDirection: "row",
-                                gap: mobile ? 10 : 16,
+                                gap: store.preferences.compactHabits ? 8 : mobile ? 10 : 16,
                                 alignItems: "center",
                                 paddingLeft: mobile ? 16 : 24,
                                 paddingRight: 8,
+                                paddingVertical: store.preferences.compactHabits ? 6 : 0,
                               }}
                             >
                               <Ring
                                 color={h.color}
                                 value={history.at(-1)?.score ?? 0}
-                                size={mobile ? 22 : 32}
+                                size={store.preferences.compactHabits ? 20 : mobile ? 22 : 32}
                               />
                               <View style={{ flex: 1 }}>
                                 <Label
@@ -1064,7 +1065,7 @@ export default function App() {
                                 >
                                   {h.name}
                                 </Label>
-                                {!mobile && (
+                                {!mobile && !store.preferences.compactHabits && (
                                   <Label
                                     muted
                                     style={{
