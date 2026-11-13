@@ -101,20 +101,22 @@ export default function App() {
   const today = day(now, store.preferences.dayOffset),
     mobile = width < 700,
     compact = mobile || touchDevice,
-    sidebar = width >= 1000 && !compact,
-    cellWidth = mobile ? 44 : 56;
+    sidebar = width >= 1000 && !compact;
   const gutter = mobile ? 16 : width < 1200 ? 24 : 48,
     canvasWidth = Math.min(width - (sidebar ? 216 : 0), 1320) - (compact ? 0 : gutter * 2);
   const count = Math.max(
     3,
     Math.min(
-      7,
+      mobile ? 5 : 7,
       Math.floor(
         (canvasWidth - (mobile ? 144 : 280)) /
-          cellWidth,
+          (mobile ? 44 : 56),
       ),
     ),
   );
+  const cellWidth = mobile
+    ? Math.min(56, Math.max(44, (canvasWidth - 144) / count))
+    : 56;
   const navigation = useDateNavigation({
     offset,
     cellWidth,
