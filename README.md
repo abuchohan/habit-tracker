@@ -94,6 +94,8 @@ The service worker caches only app assets. API and authentication responses are 
 
 Today is highlighted through the date header and habit entries. Swipe horizontally over the date grid on a phone, or click and drag it with a mouse, to browse past dates. Habit names stay in place and vertical list scrolling works normally. Date order follows the Reverse date order setting; the Today button returns to the current day.
 
+Choose **Settings > Days shown on mobile** to display 1–5 date columns (default: 5). Narrow screens may display fewer columns to preserve touch targets. Desktop keeps up to seven columns. This preference is saved locally, included in JSON backups and synced with a connected account.
+
 ## Data and sync
 
 - Web data is saved in IndexedDB; native builds use AsyncStorage.

@@ -8,6 +8,44 @@ async function addHabit(page: Page, name = 'Read books') {
 }
 function headers(page: Page) { return page.locator('[data-testid^="date-header-"]'); }
 async function headerDates(page: Page) { return headers(page).evaluateAll(elements => elements.map(e => e.getAttribute('data-testid')!.slice('date-header-'.length))); }
+
+test('date columns adapt when the viewport changes between phone and desktop widths', async ({ page }, testInfo) => {
+  await page.goto('/');
+  await addHabit(page);
+  for (const width of [390, 562, 1280, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect(headers(page)).toHaveCount(width < 700 ? 5 : 7);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (width === 562) await page.screenshot({ path: `artifacts/${testInfo.project.name}-mobile-date-columns.png` });
+  }
+});
+
+test('mobile day count can be changed, persists across reloads and leaves desktop unchanged', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await addHabit(page);
+  await expect(headers(page)).toHaveCount(5);
+  for (const count of [3, 1, 2, 4, 5, 3]) {
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await page.getByRole('radio', { name: `${count} ${count === 1 ? 'day' : 'days'}`, exact: true }).click();
+    await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+    await expect(headers(page)).toHaveCount(count);
+  }
+  await page.reload();
+  await expect(headers(page)).toHaveCount(3);
+  await page.screenshot({ path: `artifacts/${testInfo.project.name}-three-mobile-days.png` });
+  await page.setViewportSize({ width: 1280, height: 844 });
+  await expect(headers(page)).toHaveCount(7);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(headers(page)).toHaveCount(3);
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('radio', { name: '3 days', exact: true })).toBeChecked();
+  await page.getByRole('radio', { name: '5 days', exact: true }).click();
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+  await page.setViewportSize({ width: 320, height: 844 });
+  await expect(headers(page)).toHaveCount(4);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
 async function drag(page: Page, target: Locator, dx: number, dy = 0) {
   const box = await target.boundingBox(); if (!box) throw new Error('Missing drag target');
   const x = box.x + box.width / 2, y = box.y + box.height / 2;

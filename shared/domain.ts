@@ -55,6 +55,7 @@ export const preferencesSchema = z.object({
   reverse: z.boolean().default(true), firstWeekday: z.number().int().min(0).max(6).default(1),
   dayOffset: z.number().int().min(0).max(6).default(0), tapToToggle: z.boolean().default(true),
   reducedMotion: z.boolean().default(false),
+  mobileDays: z.number().int().min(1).max(5).default(5),
 });
 export const savedPreferencesSchema = z.object({
   version: base.version,

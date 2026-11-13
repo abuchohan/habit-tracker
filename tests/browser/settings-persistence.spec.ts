@@ -99,12 +99,15 @@ test('account settings follow devices, survive offline edits and stay separate f
     await openSettings(page);
     await page.getByRole('checkbox', { name: 'Reverse date order', exact: true }).click();
     await expect.poll(() => remote.get('settings@example.com')?.values.reverse).toBe(true);
+    await page.getByRole('radio', { name: '3 days', exact: true }).click();
+    await expect.poll(() => remote.get('settings@example.com')?.values.mobileDays).toBe(3);
     await closeDialog(page);
     await other.goto('/');
     await connectAccount(other);
     await openSettings(other);
     await expect(other.getByRole('checkbox', { name: 'Reverse date order', exact: true })).toBeChecked();
     await expect(other.getByRole('checkbox', { name: 'Enable skip days', exact: true })).toBeChecked();
+    await expect(other.getByRole('radio', { name: '3 days', exact: true })).toBeChecked();
     await closeDialog(other);
 
     offline = true;

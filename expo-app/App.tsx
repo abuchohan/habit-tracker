@@ -104,16 +104,9 @@ export default function App() {
     sidebar = width >= 1000 && !compact;
   const gutter = mobile ? 16 : width < 1200 ? 24 : 48,
     canvasWidth = Math.min(width - (sidebar ? 216 : 0), 1320) - (compact ? 0 : gutter * 2);
-  const count = Math.max(
-    3,
-    Math.min(
-      mobile ? 5 : 7,
-      Math.floor(
-        (canvasWidth - (mobile ? 144 : 280)) /
-          (mobile ? 44 : 56),
-      ),
-    ),
-  );
+  const count = mobile
+    ? Math.min(store.preferences.mobileDays, Math.max(1, Math.floor((canvasWidth - 144) / 44)))
+    : Math.max(3, Math.min(7, Math.floor((canvasWidth - 280) / 56)));
   const cellWidth = mobile
     ? Math.min(56, Math.max(44, (canvasWidth - 144) / count))
     : 56;
