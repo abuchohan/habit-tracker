@@ -45,6 +45,7 @@ test('numerical tracking, themes, full backup export, and empty-account form', a
   await page.getByRole('textbox', { name: 'Unit', exact: true }).fill('km');
   await page.getByRole('button', { name: 'Save habit', exact: true }).click();
   await page.getByRole('button', { name: /^Run, .*unknown$/ }).first().click();
+  await page.getByRole('button', { name: /^Run, .*5 km$/ }).first().click();
   await page.getByRole('textbox', { name: 'Value (km)', exact: true }).fill('5.5');
   await page.getByRole('button', { name: 'Save entry', exact: true }).click();
   await expect(page.getByRole('button', { name: /^Run, .*5.5 km$/ }).first()).toBeVisible();

@@ -2,6 +2,8 @@
 
 An Expo / React Native version of Loop Habit Tracker, with a browser interface for phones and Windows. The app works locally without an account. Optional accounts sync habits through an independent copy of the Spring Board backend (Express, Prisma, PostgreSQL, httpOnly cookie sessions).
 
+For measurable habits, tap an empty date cell to record the target (for example, 30 push ups). Hold the cell to enter a different amount; the editor starts with the target filled in. Tap a recorded value to edit it. Turn off **Settings > Single tap to toggle** to always open the editor.
+
 With **Filter & sort > My order** selected (the default), hold a habit's name until the grip appears, drag it up or down, and release to save its position. The list scrolls when you drag near its edges. Manual order is saved offline and syncs with your account. Filtered moves preserve the positions of hidden habits. Keyboard users can focus a habit and press **Alt+Up/Down**; **Escape** cancels a drag.
 
 ## Run locally

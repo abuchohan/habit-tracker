@@ -6,8 +6,9 @@ import { Button, Choices, Input, type InputHandle, Label, Sheet, useTheme } from
 export function EntryEditor({ habit, date: initialDate, onClose }: { habit: Habit; date: string; onClose: () => void }) {
   const t = useTheme();
   const store = useStore(), existing = store.records.find((r): r is Entry => r.kind === 'entry' && r.id === entryId(habit.id, initialDate) && !r.deleted);
+  const initialValue = (entry?: Entry) => entry?.value?.toString() ?? (habit.type === 'number' && (!entry || entry.state === 'unknown') ? String(habit.target) : '');
   const [date, setDate] = useState(initialDate), [status, setStatus] = useState<Entry['state']>(existing?.state ?? 'unknown');
-  const [value, setValue] = useState(existing?.value?.toString() ?? ''), [notes, setNotes] = useState(existing?.notes ?? ''), [error, setError] = useState(''), [busy, setBusy] = useState(false);
+  const [value, setValue] = useState(initialValue(existing)), [notes, setNotes] = useState(existing?.notes ?? ''), [error, setError] = useState(''), [busy, setBusy] = useState(false);
   const [time, setTime] = useState(existing?.time ? formatTime(existing.time, habit.timeFormat).split(' ')[0] : '');
   const [period, setPeriod] = useState<'AM' | 'PM'>(Number(existing?.time?.slice(0, 2) ?? 0) < 12 ? 'AM' : 'PM');
   const [timeError, setTimeError] = useState(''), timeRef = useRef<InputHandle>(null);
@@ -31,7 +32,7 @@ export function EntryEditor({ habit, date: initialDate, onClose }: { habit: Habi
   }
   return <Sheet title={habit.name} onClose={onClose}>
     {!!habit.question && <Label>{habit.question}</Label>}
-    <Input label="Date (YYYY-MM-DD)" value={date} onChangeText={v => { setDate(v); const e = store.records.find((r): r is Entry => r.kind === 'entry' && r.id === entryId(habit.id, v) && !r.deleted); setStatus(e?.state ?? 'unknown'); setValue(e?.value?.toString() ?? ''); setClock(e?.time); setNotes(e?.notes ?? ''); }} />
+    <Input label="Date (YYYY-MM-DD)" value={date} onChangeText={v => { setDate(v); const e = store.records.find((r): r is Entry => r.kind === 'entry' && r.id === entryId(habit.id, v) && !r.deleted); setStatus(e?.state ?? 'unknown'); setValue(initialValue(e)); setClock(e?.time); setNotes(e?.notes ?? ''); }} />
     {habit.type === 'time' && <View style={{ gap: 12 }}>
       <Input label={habit.timeFormat === '24h' ? 'Time (HH:mm)' : 'Time (hh:mm)'} inputRef={timeRef} error={timeError} value={time} placeholder={habit.timeFormat === '24h' ? '09:30' : '9:30'} maxLength={5} autoCapitalize="none" onChangeText={v => { setTime(v); setTimeError(''); if (v.trim()) setStatus('yes'); }} />
       {habit.timeFormat === '12h' && <Choices value={period} options={[["AM", 'AM'], ['PM', 'PM']]} onChange={setPeriod} />}

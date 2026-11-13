@@ -198,7 +198,7 @@ export default function App() {
     reorderHabits(id, targetId, ids).catch(reportError);
   });
   function toggle(h: Habit, date: string) {
-    if (h.type !== "boolean" || !store.preferences.tapToToggle) {
+    if (h.type === "time" || !store.preferences.tapToToggle) {
       setEntry({ habit: h, date });
       return;
     }
@@ -206,6 +206,18 @@ export default function App() {
       (r): r is Entry =>
         r.kind === "entry" && r.id === entryId(h.id, date) && !r.deleted,
     );
+    if (h.type === "number") {
+      if (prev && (prev.state !== "unknown" || prev.value !== null)) {
+        setEntry({ habit: h, date });
+      } else {
+        saveEntry(h.id, date, {
+          state: "yes",
+          value: h.target,
+          notes: prev?.notes ?? "",
+        }).catch(reportError);
+      }
+      return;
+    }
     const state =
       prev?.state === "yes"
         ? store.preferences.skip
@@ -1083,6 +1095,13 @@ export default function App() {
                                   key={column}
                                   accessibilityRole="button"
                                   accessibilityLabel={`${h.name}, ${date}, ${clock ? clock.join(' ') : h.type === "number" && number !== null && number !== undefined ? `${number} ${h.unit}` : state}`}
+                                  accessibilityHint={h.type === "number" && store.preferences.tapToToggle
+                                    ? `Tap an empty cell to record ${h.target} ${h.unit}. Long press to enter a different value. Tap a recorded value to edit it.`
+                                    : "Long press to edit this entry."}
+                                  accessibilityActions={[{ name: 'longpress', label: 'Edit entry' }]}
+                                  onAccessibilityAction={event => {
+                                    if (event.nativeEvent.actionName === 'longpress') setEntry({ habit: h, date });
+                                  }}
                                   onPress={() => {
                                     if (!navigation.suppressPress())
                                       toggle(h, date);

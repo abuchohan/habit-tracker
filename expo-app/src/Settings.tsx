@@ -21,7 +21,7 @@ export function Settings({ onClose, onAccount }: { onClose: () => void; onAccoun
   return <Sheet title="Settings" onClose={onClose}>
     <Label style={{ fontSize: 20, fontWeight: '500' }}>Appearance</Label>
     <Choices value={p.theme} options={[["system", 'System'], ['light', 'Light'], ['dark', 'Dark'], ['black', 'Pure black']]} onChange={theme => pref({ theme })} />
-    <Check label="Single tap to toggle" detail="When disabled, tap opens the entry editor." value={p.tapToToggle} onChange={tapToToggle => pref({ tapToToggle })} />
+    <Check label="Single tap to toggle" detail="Tap an empty measurable cell to record its target. Long press to enter a different value. When disabled, tap opens the entry editor." value={p.tapToToggle} onChange={tapToToggle => pref({ tapToToggle })} />
     <Check label="Enable skip days" detail="Toggle again after a checkmark to skip. Skips preserve your score and streak." value={p.skip} onChange={skip => pref({ skip })} />
     <Check label="Show question marks for missing data" value={p.unknown} onChange={unknown => pref({ unknown })} />
     <Check label="Reverse date order" value={p.reverse} onChange={reverse => pref({ reverse })} />
