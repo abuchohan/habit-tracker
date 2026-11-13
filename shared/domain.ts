@@ -38,6 +38,8 @@ export const habitSchema = z.object({
   unit: z.string().max(40), created: dateSchema, archived: z.boolean(), order: z.number().finite(),
   reminder: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable(),
   reminderDays: z.array(z.number().int().min(0).max(6)).max(7),
+  reminderPush: z.boolean().optional(),
+  reminderEmail: z.boolean().optional(),
   timezone: z.string().max(100).refine(v => { try { new Intl.DateTimeFormat('en', { timeZone: v }); return true; } catch { return false; } }),
 }).refine(h => h.numerator <= h.denominator, 'Repetitions cannot exceed the interval');
 export const entrySchema = z.object({

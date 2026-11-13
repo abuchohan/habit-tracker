@@ -4,6 +4,7 @@ import { backupSchema, csv, HabitRecord } from '../../shared/domain';
 import { backup, importBackup, savePreferences, useStore, saveRecords } from './store';
 import { Button, Check, Choices, Label, Sheet, useTheme } from './ui';
 import { download, pickFile } from './platform';
+import { PushSettings } from './PushSettings';
 export function Settings({ onClose, onAccount }: { onClose: () => void; onAccount: () => void }) {
   const t = useTheme();
   const store = useStore(), p = store.preferences, [error, setError] = useState(''), [message, setMessage] = useState(''), [busy, setBusy] = useState(false);
@@ -30,6 +31,7 @@ export function Settings({ onClose, onAccount }: { onClose: () => void; onAccoun
     <Check label="Start the day at 3 am" detail="Late-night entries before 3 am count toward the previous day. Uses your device’s local timezone." value={p.dayOffset === 3} onChange={v => pref({ dayOffset: v ? 3 : 0 })} />
     <Label style={{ fontSize: 20, fontWeight: '500' }}>Account</Label><Button onPress={onAccount}>{store.account ? store.account.email : 'Connect a sync account'}</Button>
     <Label muted>{store.account ? store.syncStatus : 'Local only · no account required'}</Label>
+    <Label style={{ fontSize: 20, fontWeight: '500' }}>Notifications</Label><PushSettings />
     <Label style={{ fontSize: 20, fontWeight: '500' }}>Backups & data</Label><Label>Browser storage belongs to this browser and website address. Export a backup to keep a separate copy of your habits.</Label>
     <Button disabled={busy} onPress={() => run(() => download('habits-backup.json', backup()))}>Export full backup</Button>
     <Button disabled={busy} onPress={() => run(() => download('habits.csv', csv(store.records), 'text/csv'))}>Export CSV</Button>
@@ -37,7 +39,7 @@ export function Settings({ onClose, onAccount }: { onClose: () => void; onAccoun
     <Button disabled={busy} onPress={() => run(chooseBackup)}>Import backup{Platform.OS === 'web' ? ' / Loop database' : ''}</Button>
     <Label style={{ fontSize: 20, fontWeight: '500' }}>About Habits</Label><Label>Habits · Web & Expo edition</Label>
     <Label muted>Based on Loop Habit Tracker by Álinson Santos Xavier and contributors. Licensed under GPL-3.0-or-later.</Label>
-    <Label muted>Reminders and native home-screen widgets are planned for the iOS version.</Label>
+    <Label muted>Native notifications and home-screen widgets are planned for the iOS version. Web push is available from the installed web app.</Label>
     {!!error && <Label accessibilityRole="alert" style={{ color: t.danger }}>{error}</Label>}{!!message && <Label accessibilityLiveRegion="polite">{message}</Label>}
     {pending && <Sheet title="Import this backup?" onClose={() => setPending(null)}><Label>{pending.records.filter(r => r.kind === 'habit' && !r.deleted).length} habits and {pending.records.filter(r => r.kind === 'entry' && !r.deleted).length} entries.</Label>
       <Label muted>Imported data will merge with your current habits. Matching identifiers will be updated from the backup. Export your current backup first if you need to undo this.</Label>

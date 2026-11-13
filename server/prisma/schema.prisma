@@ -18,8 +18,30 @@ model User {
   PasswordReset PasswordReset[]
   records       HabitRecord[]
   preferences   UserPreferences?
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
+}
+
+model PushSubscription {
+  id       String @id @default(cuid())
+  userId   String
+  endpoint String @unique
+  data     Json
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries PushDelivery[]
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+model PushDelivery {
+  subscriptionId String
+  habitId String
+  date String
+  createdAt DateTime @default(now())
+  subscription PushSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  @@id([subscriptionId, habitId, date])
+  @@map("push_deliveries")
 }
 
 model PasswordReset {

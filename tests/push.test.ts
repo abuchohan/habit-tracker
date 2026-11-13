@@ -1,0 +1,63 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import dotenv from 'dotenv';
+import webpush from 'web-push';
+import { newHabit } from '../shared/domain';
+
+dotenv.config({ path: 'server/.env', quiet: true });
+test('push subscriptions are private, validate endpoints and deliver once per day with retries and expiry cleanup', { skip: !process.env.DATABASE_URL }, async () => {
+  const { app } = await import('../server/app');
+  const { default: prisma } = await import('../server/prisma/client');
+  const { sendReminders } = await import('../server/services/reminders');
+  const user = await prisma.user.create({ data: { email: `push-test-${Date.now()}@example.com`, password: 'unused' } });
+  const other = await prisma.user.create({ data: { email: `push-other-${Date.now()}@example.com`, password: 'unused' } });
+  const session = await prisma.session.create({ data: { userId: user.id, expiresAt: new Date(Date.now() + 60000) } });
+  const otherSession = await prisma.session.create({ data: { userId: other.id, expiresAt: new Date(Date.now() + 60000) } });
+  const listener = app.listen(0, '127.0.0.1');
+  await new Promise<void>(resolve => listener.once('listening', resolve));
+  const address = listener.address();
+  if (!address || typeof address === 'string') throw new Error('No server');
+  const base = `http://127.0.0.1:${address.port}/api/push`;
+  const originalSend = webpush.sendNotification;
+  const oldConfig = [process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY, process.env.VAPID_SUBJECT];
+  process.env.VAPID_PUBLIC_KEY = 'test'; process.env.VAPID_PRIVATE_KEY = 'test'; process.env.VAPID_SUBJECT = 'mailto:test@example.com';
+  const subscription = { endpoint: `https://web.push.apple.com/Q${user.id}`, keys: { p256dh: 'a'.repeat(87), auth: 'a'.repeat(22) } };
+  const request = (path: string, body: unknown, id = session.id) => fetch(base + path, { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: `session_id=${id}` }, body: JSON.stringify(body) });
+  try {
+    assert.equal((await fetch(base + '/config')).status, 401);
+    assert.equal((await request('/subscribe', { ...subscription, endpoint: 'https://127.0.0.1/private' })).status, 400);
+    assert.equal((await request('/subscribe', { ...subscription, endpoint: 'https://push.apple.com.attacker.example/private' })).status, 400);
+    assert.equal((await request('/subscribe', subscription)).status, 200);
+    assert.equal((await request('/subscribe', subscription)).status, 200);
+    assert.equal(await prisma.pushSubscription.count({ where: { userId: user.id } }), 1);
+    await request('/unsubscribe', { endpoint: subscription.endpoint }, otherSession.id);
+    assert.equal(await prisma.pushSubscription.count({ where: { userId: user.id } }), 1);
+    const h = { ...newHabit(), name: 'Read', reminder: '09:00', reminderPush: true, timezone: 'Europe/London' };
+    await prisma.habitRecord.create({ data: { userId: user.id, recordId: h.id, version: h.version, data: h } });
+    let sends = 0;
+    webpush.sendNotification = (async () => { sends++; return {}; }) as typeof originalSend;
+    const now = new Date('2026-11-13T09:00:15Z');
+    await sendReminders(now); await sendReminders(now);
+    assert.equal(sends, 1);
+    const next = new Date('2026-11-14T09:00:15Z');
+    webpush.sendNotification = (async () => { throw { statusCode: 503 }; }) as typeof originalSend;
+    await sendReminders(next);
+    assert.equal(await prisma.pushDelivery.count({ where: { habitId: h.id, date: '2026-11-14' } }), 0);
+    webpush.sendNotification = (async () => { sends++; return {}; }) as typeof originalSend;
+    await sendReminders(next);
+    assert.equal(sends, 2);
+    await prisma.habitRecord.update({ where: { userId_recordId: { userId: user.id, recordId: h.id } }, data: { data: { ...h, archived: true } } });
+    await sendReminders(new Date('2026-11-15T09:00:15Z'));
+    assert.equal(sends, 2);
+    await prisma.habitRecord.update({ where: { userId_recordId: { userId: user.id, recordId: h.id } }, data: { data: h } });
+    webpush.sendNotification = (async () => { throw { statusCode: 410 }; }) as typeof originalSend;
+    await sendReminders(new Date('2026-11-15T09:00:15Z'));
+    assert.equal(await prisma.pushSubscription.count({ where: { userId: user.id } }), 0);
+  } finally {
+    webpush.sendNotification = originalSend;
+    ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT'].forEach((key, index) => { const value = oldConfig[index]; if (value === undefined) delete process.env[key]; else process.env[key] = value; });
+    await prisma.user.deleteMany({ where: { id: { in: [user.id, other.id] } } });
+    await prisma.$disconnect();
+    await new Promise<void>(resolve => listener.close(() => resolve()));
+  }
+});

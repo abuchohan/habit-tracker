@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { syncRouter } from './routes/sync.router';
+import { pushRouter } from './routes/push.router';
 import path from 'node:path';
 import fs from 'node:fs';
 
@@ -56,6 +57,7 @@ app.use('/api', (req, res, next) => {
 app.use(["/api/auth/login", "/api/auth/register", "/api/auth/reset-password"], authLimiter);
 app.use("/api", router);
 app.use('/api/sync', syncRouter);
+app.use('/api/push', pushRouter);
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Endpoint not found' }));
 const webDirectory = path.resolve(process.env.WEB_DIR || '../expo-app/dist');

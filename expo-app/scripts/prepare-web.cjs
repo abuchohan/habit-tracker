@@ -24,5 +24,20 @@ self.addEventListener('fetch', event => {
   if (event.request.mode === 'navigate') { event.respondWith(fetch(event.request).catch(() => caches.match('/index.html'))); return; }
   if (ASSETS.includes(url.pathname)) event.respondWith(caches.match(url.pathname).then(cached => cached || fetch(event.request)));
 });
+self.addEventListener('push', event => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch {}
+  event.waitUntil(self.registration.showNotification(data.title || 'Habit reminder', {
+    body: data.body || 'Time for your habit.', icon: '/icon-192.png', badge: '/icon-192.png', tag: data.tag || 'habit-reminder'
+  }));
+});
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async clients => {
+    const client = clients.find(c => new URL(c.url).origin === self.location.origin);
+    if (client) return client.focus();
+    return self.clients.openWindow('/');
+  }));
+});
 `);
 console.log('Offline app prepared:', assets.length, 'assets');

@@ -1,0 +1,35 @@
+import { test, expect } from '@playwright/test';
+
+test('optional reminders persist, validate and can be changed or disabled', async ({ page }, testInfo) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Add habit', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Name', exact: true }).fill('Read with reminder');
+  await expect(page.getByRole('checkbox', { name: 'Remind me', exact: true })).not.toBeChecked();
+  await page.getByRole('checkbox', { name: 'Remind me', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Reminder time (HH:mm)', exact: true }).fill('25:00');
+  await page.getByRole('button', { name: 'Save habit', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Reminder time (HH:mm)', exact: true })).toHaveAttribute('aria-invalid', 'true');
+  await page.getByRole('textbox', { name: 'Reminder time (HH:mm)', exact: true }).fill('20:30');
+  await page.getByRole('textbox', { name: 'Reminder timezone', exact: true }).fill('Europe/London');
+  await page.getByRole('checkbox', { name: 'Sunday', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Email reminders (coming soon)', exact: true }).click();
+  if (testInfo.project.name === 'phone-webkit') await expect(page.getByText(/tap Share in Safari/)).toBeVisible();
+  await page.screenshot({ path: `artifacts/${testInfo.project.name}-reminders.png` });
+  await page.getByRole('button', { name: 'Save habit', exact: true }).click();
+  await page.reload();
+  await page.getByRole('button', { name: 'View Read with reminder', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit habit', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Reminder time (HH:mm)', exact: true })).toHaveValue('20:30');
+  await expect(page.getByRole('checkbox', { name: 'Sunday', exact: true })).not.toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Email reminders (coming soon)', exact: true })).toBeChecked();
+  await page.getByRole('textbox', { name: 'Reminder time (HH:mm)', exact: true }).fill('21:00');
+  await page.getByRole('button', { name: 'Save habit', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit habit', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Reminder time (HH:mm)', exact: true })).toHaveValue('21:00');
+  await page.getByRole('checkbox', { name: 'Remind me', exact: true }).click();
+  await page.getByRole('button', { name: 'Save habit', exact: true }).click();
+  await page.reload();
+  await page.getByRole('button', { name: 'View Read with reminder', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit habit', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: 'Remind me', exact: true })).not.toBeChecked();
+});

@@ -198,6 +198,8 @@ export async function connect(email: string, password: string, register: boolean
 export async function disconnect() {
   if (syncing) await syncing;
   await sync();
+  const { disablePush } = await import('./notifications');
+  await disablePush();
   await api('/auth/logout', {});
   await serial(async () => {
     const records = await readRecords(null);
